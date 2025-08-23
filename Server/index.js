@@ -25,6 +25,6 @@ mongoose
 app;
 app.use("/citius", require("./routes/profile/index"));
 
-app.listen(1338, () => {
-  console.log("server is running on 1338");
+app.listen(1333, () => {
+  console.log("server is running on 1333");
 });

@@ -1,12 +1,12 @@
-const { fileUpload } = require("../../uploadMiddleware/index");
+// const { fileUpload } = require("../../uploadMiddleware/index");
 
 const express = require("express");
 const app = express();
 const userTableModel = require("../../models/workerTable");
 // const adminTableModel = require("../../models/adminTable");
-const {getUserFromDb} = require("../auth/index")
+// const { getUserFromDb } = require("../auth/index");
 
-const {tokenValidation} = require("../../utils/validation")
+// const { tokenValidation } = require("../../utils/validation");
 
 const dotenv = require("dotenv");
 const crypto = require("crypto-js");
@@ -59,7 +59,7 @@ const updateUser = async (req, res) => {
     const { data, sessData, updateId } = JSON.parse(req.body.textData);
 
     const tokenValidationResp = await tokenValidation(req, sessData);
-    
+
     if (tokenValidationResp.status === 401) {
       return res.status(401).send(tokenValidationResp.resp);
     }
@@ -117,7 +117,9 @@ const updateUser = async (req, res) => {
     } else {
       if (data["userEmail"]) {
         // const userFound = await checkUserExists(null, null, data["userEmail"]);
-        const userFound = await userTableModel.findOne({ userEmail: data["userEmail"] }).lean();
+        const userFound = await userTableModel
+          .findOne({ userEmail: data["userEmail"] })
+          .lean();
         // console.log("userFound: ", userFound.userId, updateId);
         const userDetails = await userTableModel.findOne({ userId: updateId });
         if (userFound && updateId !== userFound.userId) {
@@ -187,9 +189,8 @@ const updateUser = async (req, res) => {
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
-      }
-
-      else return res.status(200).send({ message: "User Data Updated.", data });
+      } else
+        return res.status(200).send({ message: "User Data Updated.", data });
     }
   } catch (error) {
     // Handle any errors that occur
@@ -361,7 +362,7 @@ const getUserData1 = async (req, res) => {
     if (id === "null" || id === userId) {
       data = await userTableModel.findOne({ userId }, "-password").lean();
       data = { ...data, editable: true, editAccess: null };
-    } 
+    }
     return res.status(200).send({ user: data });
   } catch (error) {
     return res.status(500).send({ message: "Internal Server Error." });
@@ -376,7 +377,9 @@ const getUserData = async (req, res) => {
     console.log("token: ", sessData, urlRole, id);
 
     if (!token || token === "null" || token === "undefined") {
-      return res.status(401).send({ message: "Unauthorised Access", redirect: "/login" });
+      return res
+        .status(401)
+        .send({ message: "Unauthorised Access", redirect: "/login" });
     }
 
     const tokenValidationResp = await tokenValidation(req, sessData, urlRole);
@@ -411,17 +414,20 @@ const getUserData = async (req, res) => {
     }
 
     if (targetUser.parentFirm !== userId) {
-      return res.status(403).send({ message: "Access Denied: You are not authorized to view this worker's data." });
+      return res
+        .status(403)
+        .send({
+          message:
+            "Access Denied: You are not authorized to view this worker's data.",
+        });
     }
 
     return res.status(200).send({ user: targetUser });
-
   } catch (error) {
     console.error(error.message);
     return res.status(500).send({ message: "Internal Server Error." });
   }
 };
-
 
 const calProfilePercentage1 = async (req, res) => {
   console.log("Function calProfilePercentage called");
