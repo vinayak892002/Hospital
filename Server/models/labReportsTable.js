@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const labReportSchema = new mongoose.Schema({
   report_id: { type: String, default: null},
-  appointment_id: { type: String, ref: "Appointments" },
+  appointment_id: { type: String, ref: "Appointments"},
   patient_id: { type: String, ref: "Users", required: true },
   test_name: { type: String, required: true },
   result_summary: { type: String },

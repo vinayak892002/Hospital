@@ -29,15 +29,35 @@ const TemplateTitle = "%s - Vuexy React Admin Template";
 const DefaultRoute = "/admin";
 
 const Login = lazy(() => import("../../views/Authentication/components/login"));
+const Dashboard = lazy(() => import("../../views/dashboard/index"));
+const Register = lazy(() =>
+  import("../../views/Authentication/components/register")
+);
 
 // ** Merge Routes
 const Routes = [
   {
-    path: "/landing-page",
+    path: "/login",
 
     element: <Login />,
     meta: {
       layout: "blank",
+    },
+  },
+  {
+    path: "/register",
+
+    element: <Register />,
+    meta: {
+      layout: "blank",
+    },
+  },
+  {
+    path: "/dashboard",
+
+    element: <Dashboard />,
+    meta: {
+      layout: "vertical",
     },
   },
   ...AdminRoutes,
