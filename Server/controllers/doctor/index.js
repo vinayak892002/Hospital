@@ -2,7 +2,6 @@ const User = require("../../models/userTable");
 
 // Get all doctors - simple fetch without filtering
 
-
 // const getDoctors = async (req, res) => {
 //   try {
 //     const doctors = await User.find({ role: "Doctor" })
@@ -26,10 +25,18 @@ const User = require("../../models/userTable");
 
 const getDoctors = async (req, res) => {
   try {
-
     const doctors = await User.find(
-      { role: "Doctor" }
-    );
+      { role: "Doctor" },
+      {
+        role: 1,
+        name: 1,
+        status: 1,
+        contact_number: 1,
+        department: 1,
+        qualification: 1,
+        availability: 1,
+      }
+    ).lean();
 
     res.status(200).json({
       message: "Doctors fetched successfully",
@@ -37,8 +44,8 @@ const getDoctors = async (req, res) => {
     });
   } catch (error) {
     console.error("Get Doctors Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 // Update doctor information
@@ -46,25 +53,25 @@ const updateDoctor = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    
+
     // Validate required fields
     if (!updateData.name || !updateData.email) {
       return res.status(400).json({
         success: false,
-        message: "Name and email are required"
+        message: "Name and email are required",
       });
     }
 
     // Check if email is already taken by another user
     const existingUser = await User.findOne({
       email: updateData.email,
-      _id: { $ne: id }
+      _id: { $ne: id },
     });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "Email is already registered with another account"
+        message: "Email is already registered with another account",
       });
     }
 
@@ -73,7 +80,7 @@ const updateDoctor = async (req, res) => {
       name: updateData.name,
       email: updateData.email,
       contact_number: updateData.contact_number,
-      status: updateData.status
+      status: updateData.status,
     };
 
     // Update profile fields if provided
@@ -85,11 +92,8 @@ const updateDoctor = async (req, res) => {
     }
 
     const updatedDoctor = await User.findOneAndUpdate(
-      { 
-        $and: [
-          { $or: [{ _id: id }, { user_id: id }] },
-          { role: "Doctor" }
-        ]
+      {
+        $and: [{ $or: [{ _id: id }, { user_id: id }] }, { role: "Doctor" }],
       },
       { $set: updateObject },
       { new: true, runValidators: true }
@@ -98,21 +102,21 @@ const updateDoctor = async (req, res) => {
     if (!updatedDoctor) {
       return res.status(404).json({
         success: false,
-        message: "Doctor not found"
+        message: "Doctor not found",
       });
     }
 
     res.status(200).json({
       success: true,
       message: "Doctor updated successfully",
-      data: updatedDoctor
+      data: updatedDoctor,
     });
   } catch (error) {
     console.error("Error updating doctor:", error);
     res.status(500).json({
       success: false,
       message: "Error updating doctor",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -123,11 +127,8 @@ const deleteDoctor = async (req, res) => {
     const { id } = req.params;
 
     const deletedDoctor = await User.findOneAndUpdate(
-      { 
-        $and: [
-          { $or: [{ _id: id }, { user_id: id }] },
-          { role: "Doctor" }
-        ]
+      {
+        $and: [{ $or: [{ _id: id }, { user_id: id }] }, { role: "Doctor" }],
       },
       { $set: { status: false } }, // Soft delete
       { new: true }
@@ -136,21 +137,21 @@ const deleteDoctor = async (req, res) => {
     if (!deletedDoctor) {
       return res.status(404).json({
         success: false,
-        message: "Doctor not found"
+        message: "Doctor not found",
       });
     }
 
     res.status(200).json({
       success: true,
       message: "Doctor deleted successfully",
-      data: deletedDoctor
+      data: deletedDoctor,
     });
   } catch (error) {
     console.error("Error deleting doctor:", error);
     res.status(500).json({
       success: false,
       message: "Error deleting doctor",
-      error: error.message
+      error: error.message,
     });
   }
 };
