@@ -26,4 +26,10 @@ export default [
     icon: <Home size={20} />,
     navLink: "/admin/dashboard",
   },
+    {
+    id: "prescription",
+    title: "Prescription",
+    icon: <Home size={20} />,
+    navLink: "/admin/prescription",
+  },
 ];
