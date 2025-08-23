@@ -32,4 +32,10 @@ export default [
     icon: <Home size={20} />,
     navLink: "/admin/login",
   },
+  {
+    id: "labReports",
+    title: "Lab Reports",
+    icon: <FileText size={20} />,
+    navLink: "admin/reports", 
+  },
 ];
