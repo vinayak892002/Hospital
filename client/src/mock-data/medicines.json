@@ -1,0 +1,23 @@
+[
+	{
+		"medicine_id": "m1",
+		"name": "Paracetamol",
+		"quantity_available": 150,
+		"expiry_date": "2026-01-31",
+		"unit_price": 30
+	},
+	{
+		"medicine_id": "m2",
+		"name": "Atorvastatin",
+		"quantity_available": 80,
+		"expiry_date": "2026-06-30",
+		"unit_price": 45
+	},
+	{
+		"medicine_id": "m3",
+		"name": "Amoxicillin",
+		"quantity_available": 0,
+		"expiry_date": "2025-09-30",
+		"unit_price": 60
+	}
+]

@@ -1,7 +1,12 @@
 import React from "react";
+import { ReportsDashboard } from "./ReportsDashboard";
 
 const index = () => {
-  return <div>Dashboard</div>;
+  return (
+    <>
+      <ReportsDashboard/>
+    </>
+  );
 };
 
 export default index;

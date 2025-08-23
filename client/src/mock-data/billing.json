@@ -1,0 +1,251 @@
+[
+	{
+		"bill_id": "b1",
+		"patient_id": "p1",
+		"appointment_id": "a1",
+		"doctor_id": "d1",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 500,
+				"department_id": "dep1"
+			},
+			{
+				"code": "ECG",
+				"name": "ECG",
+				"amount": 700,
+				"department_id": "dep1"
+			}
+		],
+		"total_amount": 1200,
+		"payment_status": "Paid",
+		"payment_mode": "Card",
+		"created_at": "2025-08-18T10:22:00Z",
+		"hospital_id": "hosp1",
+		"department_id": "dep1"
+	},
+	{
+		"bill_id": "b2",
+		"patient_id": "p5",
+		"appointment_id": "a5",
+		"doctor_id": "d2",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 600,
+				"department_id": "dep2"
+			},
+			{
+				"code": "LAB_CBC",
+				"name": "CBC",
+				"amount": 350,
+				"department_id": "dep_lab"
+			}
+		],
+		"total_amount": 950,
+		"payment_status": "Unpaid",
+		"payment_mode": "Cash",
+		"created_at": "2025-08-20T17:10:00Z",
+		"hospital_id": "hosp1",
+		"department_id": "dep2"
+	},
+	{
+		"bill_id": "b3",
+		"patient_id": "p4",
+		"appointment_id": "a4",
+		"doctor_id": "d4",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 700,
+				"department_id": "dep1"
+			},
+			{
+				"code": "TROP_T",
+				"name": "Troponin-T",
+				"amount": 800,
+				"department_id": "dep_lab"
+			}
+		],
+		"total_amount": 1500,
+		"payment_status": "Partially Paid",
+		"payment_mode": "Online",
+		"created_at": "2025-08-20T15:00:00Z",
+		"hospital_id": "hosp2",
+		"department_id": "dep1",
+		"partial_paid_amount": 800
+	},
+	{
+		"bill_id": "b4",
+		"patient_id": "p2",
+		"appointment_id": "a6",
+		"doctor_id": "d1",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 500,
+				"department_id": "dep1"
+			},
+			{
+				"code": "PHARM_PARA",
+				"name": "Paracetamol (strip)",
+				"amount": 120,
+				"department_id": "dep_pharm"
+			}
+		],
+		"total_amount": 620,
+		"payment_status": "Paid",
+		"payment_mode": "Card",
+		"created_at": "2025-08-21T09:15:00Z",
+		"hospital_id": "hosp1",
+		"department_id": "dep1"
+	},
+	{
+		"bill_id": "b5",
+		"patient_id": "p3",
+		"appointment_id": "a7",
+		"doctor_id": "d5",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 650,
+				"department_id": "dep2"
+			},
+			{
+				"code": "EEG",
+				"name": "EEG",
+				"amount": 1000,
+				"department_id": "dep2"
+			}
+		],
+		"total_amount": 1650,
+		"payment_status": "Paid",
+		"payment_mode": "Online",
+		"created_at": "2025-08-21T12:45:00Z",
+		"hospital_id": "hosp3",
+		"department_id": "dep2"
+	},
+	{
+		"bill_id": "b6",
+		"patient_id": "p5",
+		"appointment_id": "a9",
+		"doctor_id": "d4",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 700,
+				"department_id": "dep1"
+			},
+			{
+				"code": "ECHO",
+				"name": "Echocardiogram",
+				"amount": 1800,
+				"department_id": "dep1"
+			}
+		],
+		"total_amount": 2500,
+		"payment_status": "Paid",
+		"payment_mode": "Cash",
+		"created_at": "2025-08-22T16:00:00Z",
+		"hospital_id": "hosp2",
+		"department_id": "dep1"
+	},
+	{
+		"bill_id": "b7",
+		"patient_id": "p4",
+		"appointment_id": "a10",
+		"doctor_id": "d2",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 600,
+				"department_id": "dep2"
+			},
+			{
+				"code": "LAB_LIPID",
+				"name": "Lipid Profile",
+				"amount": 900,
+				"department_id": "dep_lab"
+			}
+		],
+		"total_amount": 1500,
+		"payment_status": "Paid",
+		"payment_mode": "Card",
+		"created_at": "2025-08-23T10:00:00Z",
+		"hospital_id": "hosp1",
+		"department_id": "dep2"
+	},
+	{
+		"bill_id": "b8",
+		"patient_id": "p3",
+		"appointment_id": "a12",
+		"doctor_id": "d5",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 650,
+				"department_id": "dep2"
+			},
+			{
+				"code": "MRI",
+				"name": "MRI Brain",
+				"amount": 3500,
+				"department_id": "dep2"
+			}
+		],
+		"total_amount": 4150,
+		"payment_status": "Unpaid",
+		"payment_mode": "Online",
+		"created_at": "2025-08-23T17:00:00Z",
+		"hospital_id": "hosp3",
+		"department_id": "dep2"
+	},
+	{
+		"bill_id": "b9",
+		"patient_id": "p1",
+		"appointment_id": "a1",
+		"doctor_id": "d1",
+		"services": [
+			{
+				"code": "PHARM_ATOR",
+				"name": "Atorvastatin (strip)",
+				"amount": 220,
+				"department_id": "dep_pharm"
+			}
+		],
+		"total_amount": 220,
+		"payment_status": "Paid",
+		"payment_mode": "Cash",
+		"created_at": "2025-08-18T10:45:00Z",
+		"hospital_id": "hosp1",
+		"department_id": "dep_pharm"
+	},
+	{
+		"bill_id": "b10",
+		"patient_id": "p2",
+		"appointment_id": "a2",
+		"doctor_id": "d2",
+		"services": [
+			{
+				"code": "CONSULT",
+				"name": "Consultation",
+				"amount": 600,
+				"department_id": "dep2"
+			}
+		],
+		"total_amount": 600,
+		"payment_status": "Paid",
+		"payment_mode": "Card",
+		"created_at": "2025-08-24T09:00:00Z",
+		"hospital_id": "hosp1",
+		"department_id": "dep2"
+	}
+]

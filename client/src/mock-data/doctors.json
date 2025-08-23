@@ -1,0 +1,37 @@
+[
+	{
+		"doctor_id": "d1",
+		"name": "Dr. Rao",
+		"department_id": "dep1",
+		"hospital_id": "hosp1",
+		"qualification": "MD Cardiology"
+	},
+	{
+		"doctor_id": "d2",
+		"name": "Dr. Mehta",
+		"department_id": "dep2",
+		"hospital_id": "hosp1",
+		"qualification": "DM Neurology"
+	},
+	{
+		"doctor_id": "d3",
+		"name": "Dr. Singh",
+		"department_id": "dep3",
+		"hospital_id": "hosp2",
+		"qualification": "MS Orthopedics"
+	},
+	{
+		"doctor_id": "d4",
+		"name": "Dr. Iyer",
+		"department_id": "dep1",
+		"hospital_id": "hosp2",
+		"qualification": "MD Cardiology"
+	},
+	{
+		"doctor_id": "d5",
+		"name": "Dr. Kapoor",
+		"department_id": "dep2",
+		"hospital_id": "hosp3",
+		"qualification": "DM Neurology"
+	}
+]
