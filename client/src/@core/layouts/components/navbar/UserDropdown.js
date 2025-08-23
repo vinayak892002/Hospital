@@ -33,17 +33,9 @@ import {
 // ** Default Avatar Image
 import defaultAvatar from "@src/assets/images/portrait/small/avatar-s-11.jpg";
 import { useEffect, useState } from "react";
-import IdCard from "../../../../views/components/IdCard";
 
 const getRoleName = (roleCode) => {
   const roleMap = {
-    CUS: "Customer",
-    ENT: "Enterprise",
-    DEV: "Developer",
-    DCF: "Design Firm",
-    SPL: "Supplier",
-    WIN: "Workpro",
-    WFM: "Workman-Firm",
     ADM: "Admin",
   };
 
@@ -51,13 +43,6 @@ const getRoleName = (roleCode) => {
 };
 
 const reverseUrlRoleMap = {
-  CUS: "customer",
-  ENT: "enterprise",
-  DEV: "developer",
-  DCF: "design-firm",
-  SPL: "supplier",
-  WIN: "workpro",
-  WFM: "workman-firm",
   ADM: "admin",
 };
 
@@ -74,7 +59,7 @@ const UserDropdown = () => {
       },
     };
     const fetchResponse = await fetch(
-      `http://localhost:1338/piombo/logout`,
+      `http://localhost:1333/piombo/logout`,
       settings
     );
     const res = await fetchResponse.json();
@@ -211,16 +196,7 @@ const UserDropdown = () => {
             <span className="text-dark">My I'd</span>
           </div>
         </ModalHeader>
-        <ModalBody className="user-select-none w-100 d-flex justify-content-center my-1">
-          <IdCard
-            role={reverseUrlRoleMap[userDetails.role]}
-            name={userDetails.userName}
-            mobile={userDetails.userMobile}
-            email={userDetails.userEmail}
-            userId={userDetails.userId}
-            origin={"User-Dropdown"}
-          />
-        </ModalBody>
+        <ModalBody className="user-select-none w-100 d-flex justify-content-center my-1"></ModalBody>
       </Modal>
     </>
   );
