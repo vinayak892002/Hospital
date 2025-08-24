@@ -1,6 +1,6 @@
 // ** Logo
 // import logo from "@src/assets/images/logo/logo.png";
-import logo from "/src/assets/images/logo/Final_Logo.png";
+import logo from "/src/assets/images/logo/logo.webp";
 
 const SpinnerComponent = () => {
   return (

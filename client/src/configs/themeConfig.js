@@ -1,5 +1,5 @@
 // Logo Import
-import logo from "/src/assets/images/logo/Final_Logo.png";
+import logo from "/src/assets/images/logo/logo.webp";
 
 // You can customize the template with the help of this file
 
