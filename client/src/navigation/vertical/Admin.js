@@ -27,6 +27,12 @@ export default [
     navLink: "/admin/dashboard",
   },
   {
+    id: "managePatients",
+    title: "ManagePatients",
+    icon: <Home size={20} />,
+    navLink: "/admin/managePatients",
+  },
+  {
     id: "list",
     title: "LIST",
     icon: <Home size={20} />,

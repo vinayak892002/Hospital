@@ -31,6 +31,7 @@ const DefaultRoute = "/admin";
 const Login = lazy(() => import("../../views/Authentication/components/login"));
 const Dashboard = lazy(() => import("../../views/dashboard/index"));
 
+
 const Register = lazy(() =>
   import("../../views/Authentication/components/register")
 );
@@ -45,6 +46,7 @@ const Routes = [
       layout: "blank",
     },
   },
+  
   {
     path: "/register",
 

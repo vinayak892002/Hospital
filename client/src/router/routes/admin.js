@@ -9,7 +9,7 @@ const Dashboard = lazy(() => import("../../views/dashboard/index"));
 const ManageReports = lazy(() =>
   import("../../views/LabReports/components/manageReports")
 );
-
+const ManagePatients = lazy(() => import("../../views/managePatients/index"));
 const LabReports = lazy(() =>
   import("../../views/LabReports/components/viewReports")
 );
@@ -20,6 +20,14 @@ const AdminRoutes = [
     element: <Dashboard />,
     meta: {
       layout: "adminLayout",
+    },
+  },
+  {
+    path: "/admin/managePatients",
+
+    element: <ManagePatients />,
+    meta: {
+      layout: "vertical",
     },
   },
   {
