@@ -2,10 +2,8 @@
 
 const FiltersBar = (props) => {
   const {
-    role, setRole,
-    hospitals, departments,
+    role, setRole, departments,
     dateRange, setDateRange,
-    selectedHospital, setSelectedHospital,
     selectedDepartment, setSelectedDepartment,
     adminHospitalId
   } = props;
@@ -24,7 +22,7 @@ const FiltersBar = (props) => {
         <option value="SUPER_ADMIN">SUPER_ADMIN</option>
       </select>
 
-      {!isAdmin && (
+      {/* {!isAdmin && (
         <select value={selectedHospital} onChange={e => setSelectedHospital(e.target.value)}>
           <option value="All">All Hospitals</option>
           {hospitals.map(h => (
@@ -34,7 +32,7 @@ const FiltersBar = (props) => {
       )}
       {isAdmin && (
         <input value={`Hospital: ${adminHospitalId}`} readOnly style={{ width: 180 }} />
-      )}
+      )} */}
 
       <select value={selectedDepartment} onChange={e => setSelectedDepartment(e.target.value)}>
         <option value="">All Departments</option>

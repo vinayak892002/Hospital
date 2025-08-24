@@ -1,10 +1,11 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
-import billing from '../../mock-data/billing.json';
+import apiService from '../../utility/apis/api';
+// import billing from '../../mock-data/billing.json';
 import appointments from '../../mock-data/appointments.json';
 import departments from '../../mock-data/departments.json';
 import doctors from '../../mock-data/doctors.json';
-import hospitals from '../../mock-data/hospitals.json';
+// import hospitals from '../../mock-data/hospitals.json';
 
 
 import {FiltersBar} from './FiltersBar';
@@ -20,17 +21,48 @@ const ReportsDashboard = () => {
 
   // Replace this with your Redux auth (role, hospitalId) if available
   const [role, setRole] = useState('ADMIN'); // 'ADMIN' | 'SUPER_ADMIN'
-  const adminHospitalId = 'hosp1';
+  // const adminHospitalId = 'hosp1';
 
   const [dateRange, setDateRange] = useState({
     start: new Date(new Date().setDate(new Date().getDate() - 7)),
     end: new Date()
   });
-  const [selectedHospital, setSelectedHospital] = useState(role === 'ADMIN' ? adminHospitalId : 'All');
+  // const [selectedHospital, setSelectedHospital] = useState(role === 'ADMIN' ? adminHospitalId : 'All');
   const [selectedDepartment, setSelectedDepartment] = useState('');
 
   const containerRef = useRef(null);
+  const [billing, setBilling] = useState([]);
+  // const [appointments, setAppointments] = useState([]);
+  // const [departments, setDepartments] = useState([]);
+  // const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [billingData] = await Promise.all([
+          apiService.getBillings(),
+          // apiService.getDepartments(),
+          // apiService.getDoctors(),
+          // apiService.getAppointments(),
+        ]);
+        
+        setBilling(billingData);
+        // setAppointments(appointmentData);
+        // setDepartments(departmentData);
+        // setDoctors(doctorData);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   const inRange = (iso) => {
     const t = new Date(iso).getTime();
     return t >= dateRange.start.getTime() && t <= dateRange.end.getTime();
@@ -38,27 +70,30 @@ const ReportsDashboard = () => {
 
   const applyScope = (arr) => {
     let out = arr;
-    if (role === 'ADMIN') {
-      out = out.filter(x => x.hospital_id === adminHospitalId);
-    } else if (selectedHospital && selectedHospital !== 'All') {
-      out = out.filter(x => x.hospital_id === selectedHospital);
-    }
+    // if (role === 'ADMIN') {
+    //   out = out.filter(x => x.hospital_id === adminHospitalId);
+    // }
+    //  else if (selectedHospital && selectedHospital !== 'All') {
+    //   out = out.filter(x => x.hospital_id === selectedHospital);
+    // }
     if (selectedDepartment) {
       out = out.filter(x => x.department_id === selectedDepartment);
     }
     return out;
   };
-
+  console.log("Billing data in dashboard:", billing);
   const scopedBills = useMemo(
     () => applyScope(billing).filter(b => inRange(b.created_at)),
     // eslint-disable-next-line
-    [role, selectedHospital, selectedDepartment, dateRange]
+    // [role, selectedDepartment, dateRange]
+    [billing, selectedDepartment, dateRange]
   );
 
   const scopedAppts = useMemo(
     () => applyScope(appointments).filter(a => inRange(a.appointment_date)),
     // eslint-disable-next-line
-    [role, selectedHospital, selectedDepartment, dateRange]
+    // [role, selectedDepartment, dateRange]
+    [appointments, selectedDepartment, dateRange]
   );
 
   const kpis = useMemo(() => {
@@ -88,12 +123,15 @@ const ReportsDashboard = () => {
   // Ensure hospital selection resets properly when switching roles
   const roleChanged = (nextRole) => {
     setRole(nextRole);
-    if (nextRole === 'ADMIN') {
-      setSelectedHospital(adminHospitalId);
-    } else {
-      setSelectedHospital('All');
-    }
+    // if (nextRole === 'ADMIN') {
+    //   setSelectedHospital(adminHospitalId);
+    // } else {
+    //   setSelectedHospital('All');
+    // }
   };
+
+  if (loading) return <div>Loading dashboard data...</div>;
+  if (error) return <div>Error loading data: {error}</div>;
 
   return (
     <div ref={containerRef} style={{ padding: 16 }}>
@@ -101,15 +139,11 @@ const ReportsDashboard = () => {
         <FiltersBar
           role={role}
           setRole={roleChanged}
-          hospitals={hospitals}
           departments={departments}
           dateRange={dateRange}
           setDateRange={setDateRange}
-          selectedHospital={selectedHospital}
-          setSelectedHospital={setSelectedHospital}
           selectedDepartment={selectedDepartment}
           setSelectedDepartment={setSelectedDepartment}
-          adminHospitalId={adminHospitalId}
         />
         <button onClick={onExportDashboardPdf}>Export Dashboard PDF</button>
       </div>

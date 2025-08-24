@@ -28,6 +28,7 @@ app.use("/citius", require("./routes/authentication/index"));
 app.use("/citius", require("./routes/doctor/index"));
 app.use("/citius", require("./routes/appointment/index"));
 app.use("/citius", require("./routes/manageDepartment/index"));
+app.use("/citius", require("./routes/analytics/index"));
 
 app.listen(1333, () => {
   console.log("server is running on 1333");
