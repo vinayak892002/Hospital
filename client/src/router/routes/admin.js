@@ -7,6 +7,8 @@ import { Navigate } from "react-router-dom";
 
 const Dashboard = lazy(() => import("../../views/dashboard/index"));
 const Appointment = lazy(() => import("../../views/appointment/index"));
+const Department = lazy(() => import("../../views/Department/index"));
+
 
 
 // ** Merge Routes
@@ -21,6 +23,13 @@ const AdminRoutes = [
   {
     path: "/admin/appointment",
     element: <Appointment />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
+    path: "/admin/department",
+    element: <Department />,
     meta: {
       layout: "adminLayout",
     },

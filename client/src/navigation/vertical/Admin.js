@@ -26,4 +26,10 @@ export default [
     icon: <Home size={20} />,
     navLink: "/admin/dashboard",
   },
+  {
+    id: "department",
+    title: "Department",
+    icon: <Home size={20} />,
+    navLink: "/admin/department",
+  },
 ];
