@@ -5,10 +5,10 @@ const { v4: uuidv4 } = require('uuid');
 // Middleware to check if user has permission to manage appointments
 const checkAppointmentPermission = (req, res, next) => {
   const allowedRoles = ['Patient', 'Receptionist', 'Doctor'];
-  req.user = {
-    role: 'Patient',
-    user_id: '4a3135b4-e6dd-4224-83d8-f68815a8860d'
-  }
+  // req.user = {
+  //   role: 'Patient',
+  //   user_id: '4a3135b4-e6dd-4224-83d8-f68815a8860d'
+  // }
   // doctorid 4a3135b4-e6dd-4224-83d8-f68815a8860d
   // if (!req.user || !allowedRoles.includes(req.user.role)) {
   //   return res.status(403).json({
@@ -23,8 +23,9 @@ const checkAppointmentPermission = (req, res, next) => {
 // Create a new appointment
 const createAppointment = async (req, res) => {
   try {
+    
     const { patient_id, doctor_id, appointment_date, notes } = req.body;
-    const userRole = req.user.role;
+    const {userRole} = req.body;
 
     // Validation
     // if (!patient_id || !doctor_id || !appointment_date) {
@@ -79,8 +80,8 @@ const createAppointment = async (req, res) => {
     // Create new appointment
     const newAppointment = new Appointment({
       appointment_id: uuidv4(),
-      patient_id: '4a3135b4-e6dd-4224-83d8-f68815a8860d',
-      doctor_id: '4a3135b4-e6dd-4224-83d8-f68815a8860d',
+      patient_id,
+      doctor_id,
       appointment_date: parseInt(appointment_date),
       status: 'Scheduled',
       notes: notes || null
@@ -93,22 +94,21 @@ const createAppointment = async (req, res) => {
     //   .populate('patient_id', 'name email contact_number')
     //   .populate('doctor_id', 'name profile.department profile.qualification');
 
-    const populatedAppointment = await Appointment.findById(newAppointment._id)
-      .populate({
-        path: 'patient_id',
-        match: { user_id: newAppointment.patient_id }, // Match by user_id instead of _id
-        select: 'name email contact_number'
-      })
-      .populate({
-        path: 'doctor_id', 
-        match: { user_id: newAppointment.doctor_id }, // Match by user_id instead of _id
-        select: 'name profile.department profile.qualification'
-      });
+    // const populatedAppointment = await Appointment.findById(newAppointment._id)
+    //   .populate({
+    //     path: 'patient_id',
+    //     match: { user_id: newAppointment.patient_id }, // Match by user_id instead of _id
+    //     select: 'name email contact_number'
+    //   })
+    //   .populate({
+    //     path: 'doctor_id', 
+    //     match: { user_id: newAppointment.doctor_id }, // Match by user_id instead of _id
+    //     select: 'name profile.department profile.qualification'
+    //   });
 
     res.status(201).json({
       success: true,
       message: 'Appointment created successfully',
-      data: populatedAppointment
     });
 
   } catch (error) {
@@ -124,53 +124,60 @@ const createAppointment = async (req, res) => {
 // Get all appointments (with role-based filtering)
 const getAppointments = async (req, res) => {
   try {
-    const { page = 1, limit = 10, status, date } = req.query;
-    const userRole = req.user.role;
-    const userId = req.user.user_id;
-
+    const { role, user_id } = req.body;
+    
     let filter = {};
 
     // Role-based filtering
-    switch (userRole) {
-      case 'Patient':
-        filter.patient_id = userId;
-        break;
-      case 'Doctor':
-        filter.doctor_id = userId;
-        break;
-      case 'Receptionist':
-        // Receptionists can see all appointments
-        break;
+    if (role === 'Patient') {
+      // If role is Patient, fetch only appointments for that specific patient
+      filter.patient_id = user_id;
+    } else if (role === 'Admin' || role === 'Doctor') {
+      // If role is Admin or Doctor, fetch all appointments (no filter)
+      filter = {};
+    } else {
+      // Handle invalid role
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized: Invalid role'
+      });
     }
 
-    // Add additional filters
-    if (status) {
-      filter.status = status;
-    }
+    const appointments = await Appointment.find(filter);
+    
+    // Get unique patient and doctor IDs
+    const patientIds = [...new Set(appointments.map(apt => apt.patient_id).filter(id => id))];
+    const doctorIds = [...new Set(appointments.map(apt => apt.doctor_id).filter(id => id))];
+    
+    // Fetch patient and doctor data
+    const patients = await User.find({ user_id: { $in: patientIds } });
+    const doctors = await User.find({ user_id: { $in: doctorIds } });
+    
+    // Create lookup maps
+    const patientMap = {};
+    const doctorMap = {};
+    
+    patients.forEach(patient => {
+      patientMap[patient.user_id] = patient;
+    });
+    
+    doctors.forEach(doctor => {
+      doctorMap[doctor.user_id] = doctor;
+    });
+    
+    // Add patient and doctor details to appointments
+    const appointmentsWithDetails = appointments.map(appointment => ({
+      ...appointment.toObject(),
+      patient: patientMap[appointment.patient_id] || null,
+      doctor: doctorMap[appointment.doctor_id] || null
+    }));
 
-    if (date) {
-      filter.appointment_date = parseInt(date);
-    }
-
-    const appointments = await Appointment.find(filter)
-      .populate('patient_id', 'name email contact_number profile.gender profile.dob')
-      .populate('doctor_id', 'name profile.department profile.qualification')
-      .sort({ appointment_date: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const total = await Appointment.countDocuments(filter);
+    const total = appointments.length;
 
     res.status(200).json({
       success: true,
-      data: appointments,
-      pagination: {
-        current_page: parseInt(page),
-        total_pages: Math.ceil(total / limit),
-        total_appointments: total,
-        has_next: page < Math.ceil(total / limit),
-        has_prev: page > 1
-      }
+      data: appointmentsWithDetails,
+      total: total
     });
 
   } catch (error) {
@@ -182,6 +189,48 @@ const getAppointments = async (req, res) => {
     });
   }
 };
+
+// // Get all appointments (with role-based filtering)
+// const getAppointments = async (req, res) => {
+//   try {
+//     const { role, user_id } = req.body;
+    
+//     let filter = {};
+
+//     // Role-based filtering
+//     if (role === 'Patient') {
+//       // If role is Patient, fetch only appointments for that specific patient
+//       filter.patient_id = user_id;
+//     } else if (role === 'Admin' || role === 'Doctor') {
+//       // If role is Admin or Doctor, fetch all appointments (no filter)
+//       filter = {};
+//     } else {
+//       // Handle invalid role
+//       return res.status(403).json({
+//         success: false,
+//         message: 'Unauthorized: Invalid role'
+//       });
+//     }
+
+//     const appointments = await Appointment.find(filter);
+
+//     const total = await Appointment.countDocuments(filter);
+
+//     res.status(200).json({
+//       success: true,
+//       data: appointments,
+//       total: total
+//     });
+
+//   } catch (error) {
+//     console.error('Error fetching appointments:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Internal server error',
+//       error: error.message
+//     });
+//   }
+// };
 
 // Get single appointment by ID
 const getAppointmentById = async (req, res) => {
@@ -234,8 +283,8 @@ const updateAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
     const { appointment_date, notes, status } = req.body;
-    const userRole = req.user.role;
-    const userId = req.user.user_id;
+    const userRole = req.body.role;
+    const userId = req.body.user_id;
 
     const appointment = await Appointment.findOne({ appointment_id: appointmentId });
 
@@ -246,40 +295,12 @@ const updateAppointment = async (req, res) => {
       });
     }
 
-    // Role-based access control
-    const hasAccess = 
-      userRole === 'Receptionist' ||
-      (userRole === 'Patient' && appointment.patient_id === userId) ||
-      (userRole === 'Doctor' && appointment.doctor_id === userId);
-
-    if (!hasAccess) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. You can only update your own appointments.'
-      });
-    }
-
     // Role-based update restrictions
     const updateData = {};
 
-    if (appointment_date) {
-      // Check if new time slot is available
-      const conflictingAppointment = await Appointment.findOne({
-        doctor_id: appointment.doctor_id,
-        appointment_date: parseInt(appointment_date),
-        appointment_id: { $ne: appointmentId },
-        status: { $ne: 'Cancelled' }
-      });
 
-      if (conflictingAppointment) {
-        return res.status(409).json({
-          success: false,
-          message: 'Doctor is not available at this time slot'
-        });
-      }
 
-      updateData.appointment_date = parseInt(appointment_date);
-    }
+    updateData.appointment_date = parseInt(appointment_date);
 
     if (notes !== undefined) {
       updateData.notes = notes;
@@ -300,13 +321,11 @@ const updateAppointment = async (req, res) => {
       { appointment_id: appointmentId },
       updateData,
       { new: true }
-    ).populate('patient_id', 'name email contact_number')
-     .populate('doctor_id', 'name profile.department profile.qualification');
+    );
 
     res.status(200).json({
       success: true,
       message: 'Appointment updated successfully',
-      data: updatedAppointment
     });
 
   } catch (error) {
@@ -323,8 +342,6 @@ const updateAppointment = async (req, res) => {
 const deleteAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
-    const userRole = req.user.role;
-    const userId = req.user.user_id;
 
     const appointment = await Appointment.findOne({ appointment_id: appointmentId });
 
@@ -332,26 +349,6 @@ const deleteAppointment = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Appointment not found'
-      });
-    }
-
-    // Role-based access control
-    const hasAccess = 
-      userRole === 'Receptionist' ||
-      (userRole === 'Patient' && appointment.patient_id === userId) ||
-      (userRole === 'Doctor' && appointment.doctor_id === userId);
-
-    if (!hasAccess) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. You can only delete your own appointments.'
-      });
-    }
-
-    if (appointment.status === 'Completed') {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot delete a completed appointment'
       });
     }
 

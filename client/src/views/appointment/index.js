@@ -13,18 +13,25 @@ import {
   Input,
   Alert,
   Spinner,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "reactstrap";
-import { Edit2, Save, X, Trash2, RefreshCw, Calendar, Plus, Search } from "lucide-react";
+import { Eye, Edit2, Save, X, Trash2, RefreshCw, Calendar, Plus, Search } from "lucide-react";
 
 const AppointmentManagement = () => {
-  const baseURL = "http://localhost:1333/citius/appointment";
+  const baseURL = "http://localhost:1333/citius";
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const hmsToken = JSON.parse(localStorage.getItem("hmsToken"));
+  const {role, user_id} = hmsToken;
+
+  // Create modal state
+  const [createModal, setCreateModal] = useState(false);
   const [createData, setCreateData] = useState({
     patient_id: "",
     doctor_id: "",
@@ -32,34 +39,62 @@ const AppointmentManagement = () => {
     notes: ""
   });
 
-  // Modal state for create appointment
-  const [createModal, setCreateModal] = useState(false);
+  // Edit modal state
+  const [editModal, setEditModal] = useState(false);
+  const [editData, setEditData] = useState({});
+  const [currentEditingId, setCurrentEditingId] = useState(null);
 
   // Dropdown options (replace with API fetch)
   const [patientOptions, setPatientOptions] = useState([]);
   const [doctorOptions, setDoctorOptions] = useState([]);
 
   // Example static arrays for now
-  useEffect(() => {
-    // TODO: Replace with API call
-    setPatientOptions([
-      { id: "p1", name: "John Doe" },
-      { id: "p2", name: "Jane Smith" },
-      { id: "p3", name: "Alice Johnson" },
-    ]);
-    setDoctorOptions([
-      { id: "d1", name: "Dr. House" },
-      { id: "d2", name: "Dr. Strange" },
-      { id: "d3", name: "Dr. Watson" },
-    ]);
-    // Example API fetch code:
-    // fetch('http://localhost:1333/api/patients')
-    //   .then(res => res.json())
-    //   .then(data => setPatientOptions(data));
-    // fetch('http://localhost:1333/api/doctors')
-    //   .then(res => res.json())
-    //   .then(data => setDoctorOptions(data));
-  }, []);
+useEffect(() => {
+  const fetchPatients = async () => {
+    try {
+      const response = await fetch('http://localhost:1333/citius/patient', {
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          role: hmsToken.role,
+          user_id: hmsToken.user_id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.patients) {
+        const formattedPatients = data.patients.map(patient => ({
+          id: patient.user_id || patient._id,
+          name: patient.name
+        }));
+        setPatientOptions(formattedPatients);
+      }
+      
+      if (data.doctors) {
+        const formattedDoctors = data.doctors.map(doctor => ({
+          id: doctor.user_id || doctor._id,
+          name: doctor.name
+        }));
+        setDoctorOptions(formattedDoctors);
+      }
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+    }
+  };
+
+  // Only fetch if hmsToken exists
+  if (hmsToken?.role && hmsToken?.user_id) {
+    fetchPatients();
+    // fetchDoctors();
+  }
+}, []);
 
   const [searchFilter, setSearchFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -67,9 +102,20 @@ const AppointmentManagement = () => {
 
   // Fetch appointments from API
   const fetchAppointments = async () => {
+    console.log(hmsToken);
+    
     try {
       setLoading(true);
-      const response = await fetch(baseURL);
+      const response = await fetch(`${baseURL}/getappointments`, {
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          role: hmsToken.role,
+          user_id: hmsToken.user_id
+        })
+      });
       const data = await response.json();
       if (response.ok && data.success) {
         setAppointments(data.data);
@@ -110,22 +156,86 @@ const AppointmentManagement = () => {
     setFilteredAppointments(filtered);
   }, [searchFilter, statusFilter, dateFilter, appointments]);
 
+  // Create appointment functions
+  const toggleCreateModal = () => {
+    setCreateModal(!createModal);
+    if (!createModal) {
+      setCreateData({ patient_id: "", doctor_id: "", appointment_date: "", notes: "" });
+      setError("");
+      setSuccess("");
+    }
+  };
+
+  const handleCreateInputChange = (field, value) => {
+    setCreateData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreate = async () => {
+    console.log('running');
+    
+    if (!createData.patient_id || !createData.doctor_id || !createData.appointment_date) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+    try {
+      const response = await fetch(`${baseURL}/createappointment`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ...createData,
+          appointment_date: new Date(createData.appointment_date).getTime()
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSuccess("Appointment created successfully");
+        await fetchAppointments();
+        setCreateData({ patient_id: "", doctor_id: "", appointment_date: "", notes: "" });
+        setCreateModal(false);
+        setTimeout(() => setSuccess(""), 3000);
+      } else {
+        setError(data.message || "Failed to create appointment");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Network error: Unable to create appointment");
+    }
+  };
+
+  // Edit appointment functions
+  const toggleEditModal = () => {
+    setEditModal(!editModal);
+    if (!editModal) {
+      setEditData({});
+      setCurrentEditingId(null);
+      setError("");
+      setSuccess("");
+    }
+  };
+
   const handleEdit = (appointment) => {
-    setEditingId(appointment._id);
+    setCurrentEditingId(appointment._id);
     setEditData({
       appointment_date: new Date(appointment.appointment_date).toISOString().slice(0, 16),
       notes: appointment.notes || "",
       status: appointment.status,
     });
+    setEditModal(true);
     setError("");
     setSuccess("");
   };
 
-  const handleSave = async (appointmentId) => {
+  const handleEditInputChange = (field, value) => {
+    setEditData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
     try {
-      const appointment = appointments.find(a => a._id === appointmentId);
-      const response = await fetch(`${baseURL}/${appointment?._id}`, {
-        method: "PUT",
+      const appointment = appointments.find(a => a._id === currentEditingId);
+      const response = await fetch(`${baseURL}/updateappointment/${appointment?.appointment_id}`, {
+        method: "POST",
         headers: { 
           "Content-Type": "application/json"
         },
@@ -138,8 +248,9 @@ const AppointmentManagement = () => {
       if (data.success) {
         setSuccess("Appointment updated successfully");
         await fetchAppointments();
-        setEditingId(null);
+        setEditModal(false);
         setEditData({});
+        setCurrentEditingId(null);
         setTimeout(() => setSuccess(""), 3000);
       } else {
         setError(data.message || "Failed to update appointment");
@@ -154,7 +265,7 @@ const AppointmentManagement = () => {
     if (window.confirm("Are you sure you want to delete this appointment?")) {
       try {
         const appointment = appointments.find(a => a._id === appointmentId);
-        const response = await fetch(`${baseURL}/${appointment?._id}`, {
+        const response = await fetch(`${baseURL}/appointment/${appointment?.appointment_id}`, {
           method: "DELETE"
         });
         const data = await response.json();
@@ -170,51 +281,6 @@ const AppointmentManagement = () => {
         setError("Network error: Unable to delete appointment");
       }
     }
-  };
-
-  const handleCreate = async () => {
-    if (!createData.patient_id || !createData.doctor_id || !createData.appointment_date) {
-      setError("Please fill in all required fields.");
-      return;
-    }
-    try {
-      const response = await fetch(baseURL, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          ...createData,
-          appointment_date: new Date(createData.appointment_date).getTime()
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setSuccess("Appointment created successfully");
-        await fetchAppointments();
-        setCreateData({ patient_id: "", doctor_id: "", appointment_date: "", notes: "" });
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        setError(data.message || "Failed to create appointment");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Network error: Unable to create appointment");
-    }
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditData({});
-    setError("");
-  };
-
-  const handleInputChange = (field, value) => {
-    setEditData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleCreateInputChange = (field, value) => {
-    setCreateData((prev) => ({ ...prev, [field]: value }));
   };
 
   const clearFilters = () => {
@@ -258,83 +324,19 @@ const AppointmentManagement = () => {
             <Calendar className="me-2 text-primary" size={32} />
             <h1 className="mb-0 fw-bolder fs-3 text-dark">Appointment Management</h1>
           </div>
-          <Button color="secondary" outline onClick={fetchAppointments}>
-            <RefreshCw className="me-2" size={18} /> Refresh
-          </Button>
+          <div className="d-flex gap-2">
+            <Button color="success" onClick={toggleCreateModal}>
+              <Plus className="me-2" size={18} /> New Appointment
+            </Button>
+            <Button color="secondary" outline onClick={fetchAppointments}>
+              <RefreshCw className="me-2" size={18} /> Refresh
+            </Button>
+          </div>
         </CardHeader>
         <CardBody>
           {error && <Alert color="danger">{error}</Alert>}
           {success && <Alert color="success">{success}</Alert>}
-          <Card className="mb-4">
-            <CardHeader>
-              <h2 className="mb-0 fw-bolder fs-4 text-dark">Create New Appointment</h2>
-            </CardHeader>
-            <CardBody>
-              <Form>
-                <Row>
-                  <Col md={6}>
-                    <FormGroup>
-                      <Label for="patientId">Patient</Label>
-                      <Input
-                        id="patientId"
-                        type="select"
-                        value={createData.patient_id}
-                        onChange={(e) => handleCreateInputChange("patient_id", e.target.value)}
-                      >
-                        <option value="">Select Patient</option>
-                        {patientOptions.map((p) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                  <Col md={6}>
-                    <FormGroup>
-                      <Label for="doctorId">Doctor</Label>
-                      <Input
-                        id="doctorId"
-                        type="select"
-                        value={createData.doctor_id}
-                        onChange={(e) => handleCreateInputChange("doctor_id", e.target.value)}
-                      >
-                        <option value="">Select Doctor</option>
-                        {doctorOptions.map((d) => (
-                          <option key={d.id} value={d.id}>{d.name}</option>
-                        ))}
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                  <Col md={6}>
-                    <FormGroup>
-                      <Label for="appointmentDate">Appointment Date & Time</Label>
-                      <Input
-                        id="appointmentDate"
-                        type="datetime-local"
-                        value={createData.appointment_date}
-                        onChange={(e) => handleCreateInputChange("appointment_date", e.target.value)}
-                      />
-                    </FormGroup>
-                  </Col>
-                  <Col md={6}>
-                    <FormGroup>
-                      <Label for="notes">Notes</Label>
-                      <Input
-                        id="notes"
-                        type="textarea"
-                        rows={3}
-                        placeholder="Additional notes (optional)"
-                        value={createData.notes}
-                        onChange={(e) => handleCreateInputChange("notes", e.target.value)}
-                      />
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <div className="d-flex justify-content-end">
-                  <Button color="primary" onClick={handleCreate}>Create Appointment</Button>
-                </div>
-              </Form>
-            </CardBody>
-          </Card>
+
           <Card className="mb-4">
             <CardHeader>
               <Row className="align-items-center">
@@ -394,74 +396,37 @@ const AppointmentManagement = () => {
                   </thead>
                   <tbody>
                     {filteredAppointments.map((appointment) => (
-                      <tr key={appointment._id}>
-                        <td>{appointment.patient_id?.name || "Unknown"}</td>
-                        <td>{appointment.doctor_id?.name || "Unknown"}</td>
-                        <td>{appointment.doctor_id?.profile?.department || "N/A"}</td>
+                      <tr key={appointment.appointment_id}>
+                        <td>{appointment.patient?.name || "Unknown"}</td>
+                        <td>{appointment.doctor?.name || "Unknown"}</td>
+                        <td>{appointment.doctor?.profile?.department || "N/A"}</td>
+                        <td>{formatDate(appointment.appointment_date)}</td>
+                        <td>{getStatusBadge(appointment.status)}</td>
                         <td>
-                          {editingId === appointment._id ? (
-                            <Input
-                              type="datetime-local"
-                              value={editData.appointment_date}
-                              onChange={(e) => handleInputChange("appointment_date", e.target.value)}
-                              size="sm"
-                            />
-                          ) : (
-                            formatDate(appointment.appointment_date)
-                          )}
+                          <span title={appointment.notes} className="d-block text-truncate" style={{ maxWidth: 200 }}>
+                            {appointment.notes || "No notes"}
+                          </span>
                         </td>
                         <td>
-                          {editingId === appointment._id ? (
-                            <Input
-                              type="select"
-                              value={editData.status}
-                              onChange={(e) => handleInputChange("status", e.target.value)}
-                              size="sm"
-                            >
-                              <option value="Scheduled">Scheduled</option>
-                              <option value="Completed">Completed</option>
-                              <option value="Cancelled">Cancelled</option>
-                            </Input>
-                          ) : (
-                            getStatusBadge(appointment.status)
-                          )}
-                        </td>
-                        <td>
-                          {editingId === appointment._id ? (
-                            <Input
-                              type="textarea"
-                              rows={2}
-                              value={editData.notes}
-                              onChange={(e) => handleInputChange("notes", e.target.value)}
-                              placeholder="Notes"
-                              size="sm"
-                            />
-                          ) : (
-                            <span title={appointment.notes} className="d-block text-truncate" style={{ maxWidth: 200 }}>
-                              {appointment.notes || "No notes"}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {editingId === appointment._id ? (
-                            <div className="d-flex gap-2">
-                              <Button color="success" size="sm" onClick={() => handleSave(appointment._id)}>
-                                <Save className="me-1" size={16} /> Save
+                          <div className="d-flex gap-2">
+                            {role === "Patient" ? (
+                              // Only View for Patient
+                              <Button color="info" size="sm" onClick={() => handleView(appointment)}>
+                                <Eye className="me-1" size={16} /> {/* import { Eye } from "lucide-react" */}
                               </Button>
-                              <Button color="secondary" size="sm" onClick={handleCancel}>
-                                <X className="me-1" size={16} /> Cancel
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="d-flex gap-2">
-                              <Button color="primary" size="sm" onClick={() => handleEdit(appointment)}>
-                                <Edit2 className="me-1" size={16} /> 
-                              </Button>
-                              <Button color="danger" size="sm" onClick={() => handleDelete(appointment._id)}>
-                                <Trash2 className="me-1" size={16} />
-                              </Button>
-                            </div>
-                          )}
+                            ) : (
+                              // Edit + Delete for Admin, Doctor, Receptionist
+                              <>
+                                <Button color="primary" size="sm" onClick={() => handleEdit(appointment)}>
+                                  <Edit2 className="me-1" size={16} />
+                                </Button>
+                                <Button color="danger" size="sm" onClick={() => handleDelete(appointment._id)}>
+                                  <Trash2 className="me-1" size={16} />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+
                         </td>
                       </tr>
                     ))}
@@ -479,6 +444,159 @@ const AppointmentManagement = () => {
           </Card>
         </CardBody>
       </Card>
+
+      {/* Create Appointment Modal */}
+      <Modal isOpen={createModal} toggle={toggleCreateModal} size="lg">
+        <ModalHeader toggle={toggleCreateModal}>
+          <div className="d-flex align-items-center">
+            <Plus className="me-2 text-success" size={24} />
+            Create New Appointment
+          </div>
+        </ModalHeader>
+        <ModalBody>
+          {error && <Alert color="danger">{error}</Alert>}
+          <Form>
+            <Row>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="createPatientId">Patient <span className="text-danger">*</span></Label>
+                  <Input
+                    id="createPatientId"
+                    type="select"
+                    value={createData.patient_id}
+                    onChange={(e) => handleCreateInputChange("patient_id", e.target.value)}
+                  >
+                    <option value="">Select Patient</option>
+                    {patientOptions.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </Input>
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="createDoctorId">Doctor <span className="text-danger">*</span></Label>
+                  <Input
+                    id="createDoctorId"
+                    type="select"
+                    value={createData.doctor_id}
+                    onChange={(e) => handleCreateInputChange("doctor_id", e.target.value)}
+                  >
+                    <option value="">Select Doctor</option>
+                    {doctorOptions.map((d) => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </Input>
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="createAppointmentDate">Appointment Date & Time <span className="text-danger">*</span></Label>
+                  <Input
+                    id="createAppointmentDate"
+                    type="datetime-local"
+                    value={createData.appointment_date}
+                    onChange={(e) => handleCreateInputChange("appointment_date", e.target.value)}
+                  />
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="createNotes">Notes</Label>
+                  <Input
+                    id="createNotes"
+                    type="textarea"
+                    rows={3}
+                    placeholder="Additional notes (optional)"
+                    value={createData.notes}
+                    onChange={(e) => handleCreateInputChange("notes", e.target.value)}
+                  />
+                </FormGroup>
+              </Col>
+            </Row>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={toggleCreateModal}>
+            <X className="me-2" size={16} />
+            Cancel
+          </Button>
+          <Button color="success" onClick={handleCreate}>
+            <Plus className="me-2" size={16} />
+            Create Appointment
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Edit Appointment Modal */}
+      <Modal isOpen={editModal} toggle={toggleEditModal} size="lg">
+        <ModalHeader toggle={toggleEditModal}>
+          <div className="d-flex align-items-center">
+            <Edit2 className="me-2 text-primary" size={24} />
+            Edit Appointment
+          </div>
+        </ModalHeader>
+        <ModalBody>
+          {error && <Alert color="danger">{error}</Alert>}
+          <Form>
+            <Row>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="editAppointmentDate">Appointment Date & Time</Label>
+                  <Input
+                    id="editAppointmentDate"
+                    type="datetime-local"
+                    value={editData.appointment_date || ""}
+                    onChange={(e) => handleEditInputChange("appointment_date", e.target.value)}
+                  />
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="editStatus">Status</Label>
+                  <Input
+                    id="editStatus"
+                    type="select"
+                    value={editData.status || ""}
+                    onChange={(e) => handleEditInputChange("status", e.target.value)}
+                  >
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </Input>
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={12}>
+                <FormGroup>
+                  <Label for="editNotes">Notes</Label>
+                  <Input
+                    id="editNotes"
+                    type="textarea"
+                    rows={4}
+                    placeholder="Additional notes"
+                    value={editData.notes || ""}
+                    onChange={(e) => handleEditInputChange("notes", e.target.value)}
+                  />
+                </FormGroup>
+              </Col>
+            </Row>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={toggleEditModal}>
+            <X className="me-2" size={16} />
+            Cancel
+          </Button>
+          <Button color="primary" onClick={handleSave}>
+            <Save className="me-2" size={16} />
+            Save Changes
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 };

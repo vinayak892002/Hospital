@@ -1,6 +1,7 @@
 import {
   Home,
   Circle,
+  Calendar,
   PlusCircle,
   Eye,
   Box,
@@ -17,6 +18,7 @@ import {
   Users,
   Codepen,
   Loader,
+  Briefcase
 } from "react-feather";
 
 export default [
@@ -27,9 +29,15 @@ export default [
     navLink: "/admin/dashboard",
   },
   {
+    id: "appointment",
+    title: "Appointment",
+    icon: <Calendar size={20} />,
+    navLink: "/admin/appointment",
+  },
+  {
     id: "department",
     title: "Department",
-    icon: <Home size={20} />,
+    icon: <Briefcase size={20} />,
     navLink: "/admin/department",
   },
 ];
