@@ -6,7 +6,7 @@ import { Navigate } from "react-router-dom";
 // ** Default Route
 
 const Dashboard = lazy(() => import("../../views/dashboard/index"));
-const Prescription = lazy(() => import("../../views/dashboard/index"));
+const Prescription = lazy(() => import("../../views/prescription/Prescription.jsx"));
 
 // ** Merge Routes
 const AdminRoutes = [

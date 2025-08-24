@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const path = require("path");
+const prescriptionRoutes = require("./routes/prescriptionRoutes");
 
 dotenv.config();
 app.use(bodyParser.json());
@@ -19,11 +20,15 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("DB connected"))
+  .then(() => {
+    console.log("DB connected");
+  })
   .catch((err) => console.log(err));
 
 app;
 app.use("/citius", require("./routes/profile/index"));
+
+app.use("/api", prescriptionRoutes);
 
 app.listen(1333, () => {
   console.log("server is running on 1333");
