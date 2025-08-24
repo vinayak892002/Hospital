@@ -6,6 +6,10 @@ import { Navigate } from "react-router-dom";
 // ** Default Route
 
 const Dashboard = lazy(() => import("../../views/dashboard/index"));
+const Appointment = lazy(() => import("../../views/appointment/index"));
+const Department = lazy(() => import("../../views/Department/index"));
+
+
 
 const Doctor = lazy(() => import("../../views/doctor/index"));
 // ** Merge Routes
