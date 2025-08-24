@@ -1,11 +1,10 @@
 const mongoose = require("mongoose");
 
-
 const medicineSchema = new mongoose.Schema({
   medicine_id: { type: String, default: null },
   name: { type: String, required: true },
   stock: { type: Number, default: 0 },
-  expiry_date: { type: Number },
+  expiry_date: { type: String, default: null },
   unit_price: { type: Number, default: 0 },
 });
 

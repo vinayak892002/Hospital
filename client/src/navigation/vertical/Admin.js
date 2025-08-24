@@ -6,6 +6,7 @@ import {
   Box,
   BarChart,
   FileText,
+  Settings,
   List,
   User,
   Save,
@@ -15,6 +16,7 @@ import {
   Plus,
   UserCheck,
   Users,
+  UserPlus,
   Codepen,
   Loader,
 } from "react-feather";
@@ -27,21 +29,34 @@ export default [
     navLink: "/admin/dashboard",
   },
   {
-    id: "managePatients",
-    title: "Manage Patients",
-    icon: <Home size={20} />,
-    navLink: "/admin/managePatients",
-  },
-  {
-    id: "manageReports",
-    title: "Manage Reports",
-    icon: <Home size={20} />,
-    navLink: "/admin/manageReports",
-  },
-  {
-    id: "doctor",
-    title: "Manage Doctor",
-    icon: <Home size={20} />,
-    navLink: "/admin/doctorManagement",
+    id: "manage",
+    title: "Manage",
+    icon: <Settings size={20} />,
+    children: [
+      {
+        id: "patients",
+        title: "Patients",
+        icon: <UserPlus size={22} />,
+        navLink: "/admin/managePatients",
+      },
+      {
+        id: "reports",
+        title: "Reports",
+        icon: <FileText size={22} />,
+        navLink: "/admin/manageReports",
+      },
+      {
+        id: "doctor",
+        title: "Doctor",
+        icon: <Users size={22} />,
+        navLink: "/admin/doctorManagement",
+      },
+      {
+        id: "inventory",
+        title: "Inventory",
+        icon: <Box size={20} />,
+        navLink: "/admin/inventory",
+      },
+    ],
   },
 ];
