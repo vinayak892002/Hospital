@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 // Import appointment controllers
@@ -8,8 +8,8 @@ const {
   getAppointments,
   getAppointmentById,
   updateAppointment,
-  deleteAppointment
-} = require('../../controllers/appointment.controller.js'); // Adjust path as needed
+  deleteAppointment,
+} = require("../../controllers/manageAppointment/index"); // Adjust path as needed
 
 // Middleware to authenticate user (you'll need to implement this)
 // const authenticateToken = require('../middleware/auth'); // Adjust path as needed
@@ -19,10 +19,10 @@ const {
 router.use(checkAppointmentPermission);
 
 // Routes
-router.post('/appointment', createAppointment);
-router.get('/appointment', getAppointments);
-router.get('/appointment/:appointmentId', getAppointmentById);
-router.put('/appointment/:appointmentId', updateAppointment);
-router.delete('/appointment/:appointmentId', deleteAppointment);
+router.post("/appointment", createAppointment);
+router.get("/appointment", getAppointments);
+router.get("/appointment/:appointmentId", getAppointmentById);
+router.put("/appointment/:appointmentId", updateAppointment);
+router.delete("/appointment/:appointmentId", deleteAppointment);
 
 module.exports = router;

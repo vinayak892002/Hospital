@@ -1,5 +1,5 @@
-const User = require('../models/userTable'); // Adjust path as needed
-const Appointment = require('../models/appointmentTable'); // Adjust path as needed
+const User = require('../../models/userTable'); // Adjust path as needed
+const Appointment = require('../../models/appointmentTable'); // Adjust path as needed
 const { v4: uuidv4 } = require('uuid');
 
 // Middleware to check if user has permission to manage appointments
