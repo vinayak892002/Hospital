@@ -6,7 +6,6 @@ import {
   X,
   Trash2,
   RefreshCw,
-  AlertCircle,
   Users,
 } from "lucide-react";
 import {
@@ -41,6 +40,7 @@ const DoctorManagement = () => {
       const response = await fetch("http://localhost:1333/citius/getdoctors");
       const data = await response.json();
       if (response.ok) {
+        console.log("Fetched doctors:", data.doctors); // Debug log
         setDoctors(data.doctors);
         setFilteredDoctors(data.doctors);
       } else {
@@ -58,24 +58,28 @@ const DoctorManagement = () => {
     fetchDoctors();
   }, []);
 
-  // Filtering
+  // Fixed filtering to handle nested profile structure
   useEffect(() => {
     let filtered = doctors;
+    
     if (searchFilter.trim()) {
       filtered = filtered.filter((d) =>
         d.name?.toLowerCase().includes(searchFilter.toLowerCase())
       );
     }
+    
     if (departmentFilter.trim()) {
       filtered = filtered.filter((d) =>
-        d.department?.toLowerCase().includes(departmentFilter.toLowerCase())
+        d.profile?.department?.toLowerCase().includes(departmentFilter.toLowerCase())
       );
     }
+    
     if (statusFilter !== "all") {
       filtered = filtered.filter((d) =>
         statusFilter === "active" ? d.status : !d.status
       );
     }
+    
     setFilteredDoctors(filtered);
   }, [searchFilter, departmentFilter, statusFilter, doctors]);
 
@@ -84,10 +88,9 @@ const DoctorManagement = () => {
     setEditData({
       name: doctor.name || "",
       contact_number: doctor.contact_number || "",
-      department: doctor.department || "",
-      qualification: doctor.qualification || "",
+      department: doctor.profile?.department || "",
+      qualification: doctor.profile?.qualification || "",
       status: doctor.status,
-      availability: doctor.availability || "",
     });
     setError("");
     setSuccess("");
@@ -95,12 +98,26 @@ const DoctorManagement = () => {
 
   const handleSave = async (doctorId) => {
     try {
-      const response = await fetch(`/api/doctor/update-doctor/${doctorId}`, {
+      // Prepare the update payload to match backend expectations
+      const updatePayload = {
+        name: editData.name,
+        contact_number: editData.contact_number,
+        department: editData.department,
+        qualification: editData.qualification,
+        status: editData.status,
+      };
+
+      console.log("Sending update payload:", updatePayload); // Debug log
+
+      const response = await fetch(`http://localhost:1333/citius/update-doctor/${doctorId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editData),
+        body: JSON.stringify(updatePayload),
       });
+      
       const data = await response.json();
+      console.log("Update response:", data); // Debug log
+      
       if (data.success) {
         setSuccess("Doctor updated successfully");
         await fetchDoctors();
@@ -119,7 +136,7 @@ const DoctorManagement = () => {
   const handleDelete = async (doctorId) => {
     if (window.confirm("Are you sure you want to delete this doctor?")) {
       try {
-        const response = await fetch(`/api/doctor/delete-doctor/${doctorId}`, {
+        const response = await fetch(`http://localhost:1333/citius/delete-doctor/${doctorId}`, {
           method: "DELETE",
         });
         const data = await response.json();
@@ -153,6 +170,20 @@ const DoctorManagement = () => {
     setStatusFilter("all");
   };
 
+  // Format availability for display
+  const formatAvailability = (availability) => {
+    if (!availability) return "N/A";
+    
+    if (typeof availability === 'object') {
+      const days = Object.entries(availability)
+        .map(([day, time]) => `${day}: ${time}`)
+        .join(', ');
+      return days.length > 50 ? days.substring(0, 50) + '...' : days;
+    }
+    
+    return availability.toString();
+  };
+
   const columns = [
     {
       name: "Name",
@@ -165,9 +196,10 @@ const DoctorManagement = () => {
             placeholder="Name"
           />
         ) : (
-          row.name
+          row.name || "N/A"
         ),
       sortable: true,
+      minWidth: "150px",
     },
     {
       name: "Contact",
@@ -179,57 +211,74 @@ const DoctorManagement = () => {
             onChange={(e) =>
               handleInputChange("contact_number", e.target.value)
             }
+            placeholder="Contact Number"
           />
         ) : (
           row.contact_number || "N/A"
         ),
       sortable: true,
+      minWidth: "120px",
     },
     {
       name: "Department",
-      selector: (row) => row.department,
+      selector: (row) => row.profile?.department,
       cell: (row) =>
         editingId === row._id ? (
           <Form.Control
             value={editData.department}
-            onChange={(e) => handleInputChange("department", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("department", e.target.value)
+            }
+            placeholder="Department"
           />
         ) : (
-          row.department || "Not assigned"
+          row.profile?.department || "Not assigned"
         ),
       sortable: true,
+      minWidth: "130px",
     },
     {
       name: "Qualification",
-      selector: (row) => row.qualification,
+      selector: (row) => row.profile?.qualification,
       cell: (row) =>
         editingId === row._id ? (
           <Form.Control
             value={editData.qualification}
-            onChange={(e) => handleInputChange("qualification", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("qualification", e.target.value)
+            }
+            placeholder="Qualification"
           />
         ) : (
-          row.qualification || "Not specified"
+          row.profile?.qualification || "Not specified"
         ),
+      minWidth: "130px",
     },
     {
       name: "Availability",
-      selector: (row) => row.availability,
+      selector: (row) => row.profile?.availability,
       cell: (row) => (
         <OverlayTrigger
           placement="top"
           overlay={
-            <Tooltip>{row.availability || "No availability info"}</Tooltip>
+            <Tooltip>
+              {row.profile?.availability ? 
+                (typeof row.profile.availability === 'object' ? 
+                  JSON.stringify(row.profile.availability, null, 2) : 
+                  row.profile.availability) : 
+                "No availability info"}
+            </Tooltip>
           }
         >
           <span
             className="text-truncate d-inline-block"
             style={{ maxWidth: "150px", cursor: "pointer" }}
           >
-            {row.availability || "N/A"}
+            {formatAvailability(row.profile?.availability)}
           </span>
         </OverlayTrigger>
       ),
+      minWidth: "150px",
     },
     {
       name: "Status",
@@ -251,37 +300,43 @@ const DoctorManagement = () => {
           </span>
         ),
       sortable: true,
+      center: true,
+      minWidth: "100px",
     },
     {
       name: "Actions",
       cell: (row) =>
         editingId === row._id ? (
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-1">
             <Button
               size="sm"
               variant="success"
               onClick={() => handleSave(row._id)}
             >
-              <Save size={12} /> Save
+              <Save size={12} />
             </Button>
             <Button size="sm" variant="secondary" onClick={handleCancel}>
-              <X size={12} /> Cancel
+              <X size={12} />
             </Button>
           </div>
         ) : (
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-1">
             <Button size="sm" variant="primary" onClick={() => handleEdit(row)}>
-              <Edit2 size={12} /> Edit
+              <Edit2 size={12} />
             </Button>
             <Button
               size="sm"
               variant="danger"
               onClick={() => handleDelete(row._id)}
             >
-              <Trash2 size={12} /> Delete
+              <Trash2 size={12} />
             </Button>
           </div>
         ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      minWidth: "120px",
     },
   ];
 
@@ -300,7 +355,9 @@ const DoctorManagement = () => {
         <Users size={32} className="text-primary me-3" />
         <div>
           <h3>Doctor Management</h3>
-          <p className="text-muted mb-0">Manage healthcare professionals</p>
+          <p className="text-muted mb-0">
+            Manage healthcare professionals ({filteredDoctors.length} doctors)
+          </p>
         </div>
         <Button
           variant="outline-primary"
@@ -311,14 +368,22 @@ const DoctorManagement = () => {
         </Button>
       </div>
 
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError("")}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" dismissible onClose={() => setSuccess("")}>
+          {success}
+        </Alert>
+      )}
 
       <Row className="mb-3">
         <Col md={3}>
           <InputGroup>
             <Form.Control
-              placeholder="Search name"
+              placeholder="Search by name..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
             />
@@ -327,7 +392,7 @@ const DoctorManagement = () => {
         <Col md={3}>
           <InputGroup>
             <Form.Control
-              placeholder="Department"
+              placeholder="Filter by department..."
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
             />
@@ -339,8 +404,8 @@ const DoctorManagement = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
           </Form.Select>
         </Col>
         <Col md={3}>
@@ -350,21 +415,35 @@ const DoctorManagement = () => {
         </Col>
       </Row>
 
+      <div className="mb-3">
+        <small className="text-muted">
+          Showing {filteredDoctors.length} of {doctors.length} doctors
+        </small>
+      </div>
+
       <DataTable
         columns={columns}
         data={filteredDoctors}
         pagination
+        paginationPerPage={10}
+        paginationRowsPerPageOptions={[5, 10, 15, 20]}
         highlightOnHover
         striped
         responsive
         persistTableHead
         noHeader
+        defaultSortFieldId="name"
       />
 
-      {filteredDoctors.length === 0 && (
+      {filteredDoctors.length === 0 && !loading && (
         <div className="text-center mt-5">
           <Users size={48} className="text-muted mb-2" />
           <h5>No doctors found</h5>
+          <p className="text-muted">
+            {doctors.length === 0 
+              ? "No doctors available in the system."
+              : "Try adjusting your search filters."}
+          </p>
         </div>
       )}
     </div>

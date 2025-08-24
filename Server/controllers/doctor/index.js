@@ -1,42 +1,19 @@
 const User = require("../../models/userTable");
 
-// Get all doctors - simple fetch without filtering
-
-// const getDoctors = async (req, res) => {
-//   try {
-//     const doctors = await User.find({ role: "Doctor" })
-//       .select("-password") // Exclude password from response
-//       .sort({ created_at: -1 });
-
-//     res.status(200).json({
-//       success: true,
-//       data: doctors,
-//       count: doctors.length
-//     });
-//   } catch (error) {
-//     console.error("Error fetching doctors:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Error fetching doctors",
-//       error: error.message
-//     });
-//   }
-// };
-
 const getDoctors = async (req, res) => {
   try {
     const doctors = await User.find(
       { role: "Doctor" },
       {
-        role: 1,
         name: 1,
         status: 1,
         contact_number: 1,
-        department: 1,
-        qualification: 1,
-        availability: 1,
+        "profile.department": 1,
+        "profile.qualification": 1,
+        "profile.availability": 1,
       }
     ).lean();
+    console.log(doctors);
 
     res.status(200).json({
       message: "Doctors fetched successfully",
@@ -48,53 +25,69 @@ const getDoctors = async (req, res) => {
   }
 };
 
-// Update doctor information
 const updateDoctor = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
 
-    // Validate required fields
-    if (!updateData.name || !updateData.email) {
+    console.log("=== UPDATE DOCTOR DEBUG ===");
+    console.log("Doctor ID from params:", id);
+    console.log("Update data:", JSON.stringify(updateData, null, 2));
+
+    // Check if ID exists
+    if (!id) {
       return res.status(400).json({
         success: false,
-        message: "Name and email are required",
+        message: "Doctor ID is required",
       });
     }
 
-    // Check if email is already taken by another user
-    const existingUser = await User.findOne({
-      email: updateData.email,
-      _id: { $ne: id },
-    });
-
-    if (existingUser) {
+    // Validate required fields - REMOVED EMAIL REQUIREMENT
+    if (!updateData.name) {
       return res.status(400).json({
         success: false,
-        message: "Email is already registered with another account",
+        message: "Name is required",
       });
     }
 
-    // Prepare update object
+    // Prepare update object - REMOVED EMAIL
     const updateObject = {
       name: updateData.name,
-      email: updateData.email,
       contact_number: updateData.contact_number,
       status: updateData.status,
     };
 
     // Update profile fields if provided
     if (updateData.department) {
-      updateObject["profile.department"] = updateData.department;
+      updateObject["department"] = updateData.department;
     }
     if (updateData.qualification) {
-      updateObject["profile.qualification"] = updateData.qualification;
+      updateObject["qualification"] = updateData.qualification;
+    }
+    if (updateData.availability) {
+      updateObject["availability"] = updateData.availability;
     }
 
+    console.log("📝 Update object:", JSON.stringify(updateObject, null, 2));
+
+    const queryCondition = {
+      $and: [{ $or: [{ _id: id }, { user_id: id }] }, { role: "Doctor" }],
+    };
+
+    // First, check if the doctor exists
+    const doctorExists = await User.findOne(queryCondition);
+    
+    if (!doctorExists) {
+      console.log("❌ Doctor not found with ID:", id);
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
+
+    // Proceed with update
     const updatedDoctor = await User.findOneAndUpdate(
-      {
-        $and: [{ $or: [{ _id: id }, { user_id: id }] }, { role: "Doctor" }],
-      },
+      queryCondition,
       { $set: updateObject },
       { new: true, runValidators: true }
     ).select("-password");
@@ -106,13 +99,14 @@ const updateDoctor = async (req, res) => {
       });
     }
 
+    console.log("✅ Doctor updated successfully");
     res.status(200).json({
       success: true,
       message: "Doctor updated successfully",
       data: updatedDoctor,
     });
   } catch (error) {
-    console.error("Error updating doctor:", error);
+    console.error("❌ Error updating doctor:", error);
     res.status(500).json({
       success: false,
       message: "Error updating doctor",
@@ -121,7 +115,6 @@ const updateDoctor = async (req, res) => {
   }
 };
 
-// Delete doctor (soft delete by setting status to false)
 const deleteDoctor = async (req, res) => {
   try {
     const { id } = req.params;
