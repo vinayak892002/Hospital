@@ -24,18 +24,13 @@ export default [
     id: "dashboard",
     title: "Dashboard",
     icon: <Home size={20} />,
-    navLink: "/admin/dashboard",
+    navLink: "/patient/dashboard",
   },
+
   {
-    id: "managePatients",
-    title: "ManagePatients",
-    icon: <Home size={20} />,
-    navLink: "/admin/managePatients",
-  },
-  {
-    id: "manageReports",
-    title: "ManageReports",
-    icon: <Home size={20} />,
-    navLink: "/admin/manageReports",
+    id: "labReports",
+    title: "ViewReports",
+    icon: <FileText size={20} />,
+    navLink: "patient/ViewReports",
   },
 ];
