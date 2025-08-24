@@ -54,8 +54,20 @@ export default [
       {
         id: "inventory",
         title: "Inventory",
-        icon: <Box size={20} />,
+        icon: <Box size={22} />,
         navLink: "/admin/inventory",
+      },
+      {
+        id: "appointment",
+        title: "Appointment",
+        icon: <Codepen size={22} />,
+        navLink: "/admin/appointment",
+      },
+      {
+        id: "department",
+        title: "Department",
+        icon: <Archive size={22} />,
+        navLink: "/admin/department",
       },
     ],
   },

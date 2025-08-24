@@ -14,6 +14,10 @@ const Doctor = lazy(() => import("../../views/doctor/index"));
 const MedicineInventory = lazy(() =>
   import("../../views/MedicineInventory/index")
 );
+
+const Appointment = lazy(() => import("../../views/appointment/index"));
+const Department = lazy(() => import("../../views/Department/index"));
+
 // ** Merge Routes
 const AdminRoutes = [
   {
@@ -48,6 +52,20 @@ const AdminRoutes = [
   {
     path: "/admin/inventory",
     element: <MedicineInventory />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
+    path: "/admin/appointment",
+    element: <Appointment />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
+    path: "/admin/department",
+    element: <Department />,
     meta: {
       layout: "adminLayout",
     },
