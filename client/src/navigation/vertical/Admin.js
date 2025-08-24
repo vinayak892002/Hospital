@@ -28,14 +28,20 @@ export default [
   },
   {
     id: "managePatients",
-    title: "ManagePatients",
+    title: "Manage Patients",
     icon: <Home size={20} />,
     navLink: "/admin/managePatients",
   },
   {
     id: "manageReports",
-    title: "ManageReports",
+    title: "Manage Reports",
     icon: <Home size={20} />,
     navLink: "/admin/manageReports",
+  },
+  {
+    id: "doctor",
+    title: "Manage Doctor",
+    icon: <Home size={20} />,
+    navLink: "/admin/doctorManagement",
   },
 ];

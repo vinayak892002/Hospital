@@ -136,8 +136,16 @@ const ManageReports = () => {
       style={{ backgroundColor: "white", borderRadius: "12px" }}
     >
       <CardBody>
+        <div className="d-flex align-items-center mb-4">
+          <FileText size={32} className="text-primary me-3" />
+          <div>
+            <h3>Add Report</h3>
+            <p className="text-muted mb-0">
+              Manage patient reports ({reports.length} reports)
+            </p>
+          </div>
+        </div>
         <div className="mb-3">
-          <h5 className="mb-3">Add Report</h5>
           <Row className="gy-3">
             {/* Patient Select */}
             <Col md={6}>
