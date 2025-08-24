@@ -72,6 +72,7 @@ const Login = () => {
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light p-3">
+   
       <div className="w-100" style={{ maxWidth: "1200px" }}>
         <Row className="shadow-lg rounded-2xl overflow-hidden">
           {/* Left Side - Login Form */}

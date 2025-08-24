@@ -1,7 +1,12 @@
+// index.js
 import React from "react";
-
-const index = () => {
-  return <div>Dashboard</div>;
+import Logout from "../logout";
+const Dashboard = () => {
+  return (
+    <div>
+      <Logout />
+    </div>
+  );
 };
 
-export default index;
+export default Dashboard;
