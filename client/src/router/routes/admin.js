@@ -6,9 +6,9 @@ import { Navigate } from "react-router-dom";
 // ** Default Route
 
 const Dashboard = lazy(() => import("../../views/dashboard/index"));
-const LabReports = lazy(() => import("../../views/LabReports/index"));
-const Doctor = lazy(() =>
-  import("../../views/Authentication/components/login")
+
+const LabReports = lazy(() =>
+  import("../../views/LabReports/components/viewReports")
 );
 // ** Merge Routes
 const AdminRoutes = [
@@ -20,14 +20,7 @@ const AdminRoutes = [
     },
   },
   {
-    path: "/admin/login",
-    element: <Doctor />,
-    meta: {
-      layout: "adminLayout",
-    },
-  },
-  {
-    path: "admin/reports",
+    path: "/admin/LabReports",
     element: <LabReports />,
     meta: {
       layout: "adminLayout",

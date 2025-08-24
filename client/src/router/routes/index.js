@@ -30,7 +30,7 @@ const DefaultRoute = "/admin";
 
 const Login = lazy(() => import("../../views/Authentication/components/login"));
 const Dashboard = lazy(() => import("../../views/dashboard/index"));
-const Reports = lazy(() => import("../../views/LabReports/index"));
+
 const Register = lazy(() =>
   import("../../views/Authentication/components/register")
 );
@@ -61,15 +61,9 @@ const Routes = [
       layout: "vertical",
     },
   },
-  {
-  path: "/reports",
-    element: <Reports />,
-    meta: {
-      layout: "vertical", 
-    },
-  },
-    ...AdminRoutes,
-  ];
+
+  ...AdminRoutes,
+];
 
 const getRouteMeta = (route) => {
   if (isObjEmpty(route.element.props)) {

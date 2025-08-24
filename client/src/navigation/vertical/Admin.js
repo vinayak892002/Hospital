@@ -30,12 +30,12 @@ export default [
     id: "list",
     title: "LIST",
     icon: <Home size={20} />,
-    navLink: "/admin/login",
+    navLink: "/admin/manage",
   },
   {
     id: "labReports",
     title: "Lab Reports",
     icon: <FileText size={20} />,
-    navLink: "admin/reports", 
+    navLink: "admin/LabReports",
   },
 ];

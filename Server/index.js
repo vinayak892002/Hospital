@@ -23,7 +23,7 @@ mongoose
   .catch((err) => console.log(err));
 
 app;
-app.use('/uploads', express.static('uploads'));
+
 app.use("/citius", require("./routes/profile/index"));
 app.use("/citius", require("./routes/authentication/index"));
 app.use("/citius", require("./routes/labreports/index"));
