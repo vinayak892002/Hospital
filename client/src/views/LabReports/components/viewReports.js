@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Container,
   Row,
@@ -10,20 +11,41 @@ import {
   Alert,
 } from "reactstrap";
 import DataTable from "react-data-table-component";
-import { Button } from "react-bootstrap";
 
 const ViewReports = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getReports = async () => {
       try {
+        const hmsToken = localStorage.getItem("hmsToken");
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+        if (!hmsToken || !userInfo) {
+          navigate("/login");
+          return;
+        }
+
+        const tokenPayload = JSON.parse(atob(hmsToken.split(".")[1]));
+        const role = tokenPayload.role;
+        const userId = userInfo.user_id;
+
         const res = await fetch("http://localhost:1333/citius/getReports");
         const data = await res.json();
+
         if (res.status === 200) {
-          setReports(data.data);
+          let filteredReports = data.data;
+
+          if (role === "patient") {
+            filteredReports = filteredReports.filter(
+              (report) => report.patient_id === userId
+            );
+          }
+
+          setReports(filteredReports);
         } else {
           setError("Failed to fetch reports");
         }
@@ -33,15 +55,12 @@ const ViewReports = () => {
         setLoading(false);
       }
     };
+
     getReports();
-  }, []);
+  }, [navigate]);
 
   const columns = [
-    {
-      name: "Patient",
-      selector: (row) => row.patient_name,
-      sortable: true,
-    },
+    { name: "Patient", selector: (row) => row.patient_name, sortable: true },
     { name: "Test Name", selector: (row) => row.test_name, sortable: true },
     { name: "Summary", selector: (row) => row.result_summary },
     { name: "Report File", selector: (row) => row.report_file },

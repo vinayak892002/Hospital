@@ -6,6 +6,9 @@ import { Navigate } from "react-router-dom";
 // ** Default Route
 
 const Dashboard = lazy(() => import("../../views/dashboard/index"));
+const ManageReports = lazy(() =>
+  import("../../views/LabReports/components/manageReports")
+);
 
 const LabReports = lazy(() =>
   import("../../views/LabReports/components/viewReports")
@@ -15,6 +18,13 @@ const AdminRoutes = [
   {
     path: "/admin/dashboard",
     element: <Dashboard />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
+    path: "/admin/manage",
+    element: <ManageReports />,
     meta: {
       layout: "adminLayout",
     },
