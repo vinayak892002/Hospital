@@ -38,7 +38,22 @@ const AdminRoutes = [
     },
   },
   {
+    path: "/doctor/managePatients",
+
+    element: <ManagePatients />,
+    meta: {
+      layout: "vertical",
+    },
+  },
+  {
     path: "/admin/manageReports",
+    element: <ManageReports />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
+    path: "/labtech/manageReports",
     element: <ManageReports />,
     meta: {
       layout: "adminLayout",
@@ -66,6 +81,13 @@ const AdminRoutes = [
     },
   },
   {
+    path: "/doctor/appointment",
+    element: <Appointment />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
     path: "/admin/department",
     element: <Department />,
     meta: {
@@ -75,6 +97,13 @@ const AdminRoutes = [
 
   {
     path: "/patient/ViewReports",
+    element: <ViewReports />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
+    path: "/doctor/ViewReports",
     element: <ViewReports />,
     meta: {
       layout: "adminLayout",

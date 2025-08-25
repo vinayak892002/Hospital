@@ -55,7 +55,7 @@ const Login = () => {
 
         localStorage.setItem("userInfo", JSON.stringify(user));
         toast.success(data.message);
-        navigate("/patient/dashboard");
+        navigate("/landingPage");
       } else {
         toast.error(data.message);
         setTimeout(() => {

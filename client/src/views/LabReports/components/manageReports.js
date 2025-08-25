@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Select from "react-select";
 import {
@@ -10,7 +11,7 @@ import {
   Input,
   Button,
 } from "reactstrap";
-import { FileText, User, Clipboard, Upload } from "lucide-react";
+import { FileText, User, Clipboard, Upload, Edit, Trash2 } from "lucide-react";
 import DataTable from "react-data-table-component";
 
 const ManageReports = () => {
@@ -20,106 +21,140 @@ const ManageReports = () => {
   const [summary, setSummary] = useState("");
   const [file, setFile] = useState(null);
   const [reports, setReports] = useState([]);
-  const [updating, setUpdating] = useState(0);
+  const [editing, setEditing] = useState(null);
+  const navigate = useNavigate();
 
-  // Fetch patients
+  useEffect(() => {
+    const hmsToken = localStorage.getItem("hmsToken");
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+    if (userInfo.role !== "LabTech") {
+      navigate("/login");
+    }
+  }, []);
+
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         const res = await fetch("http://localhost:1333/citius/getPatients");
         const data = await res.json();
-
-        const options = data.map((p) => ({
-          value: p.user_id,
-          label: p.name,
-        }));
+        const options = data.map((p) => ({ value: p.user_id, label: p.name }));
         setPatients(options);
       } catch (err) {
-        console.error("Error fetching patients:", err);
+        console.error(err);
       }
     };
-
     fetchPatients();
   }, []);
 
-  // Fetch existing reports
   useEffect(() => {
-    const getReports = async () => {
+    const fetchReports = async () => {
       try {
-        const res = await fetch("http://localhost:1333/citius/getReports", {});
-
+        const res = await fetch("http://localhost:1333/citius/getReports");
         const data = await res.json();
-        if (res.status === 200) {
-          setReports(data.data);
-        }
-      } catch (error) {
-        return { status: 500, data: { message: "Internal server error" } };
+        if (res.status === 200) setReports(data.data);
+      } catch (err) {
+        console.error(err);
       }
     };
-    getReports();
+    fetchReports();
   }, []);
 
-  const addReport = async () => {
-    if (!selectedPatient || !testName || !summary || !file) {
-      toast.error("Please fill in all fields and upload a file");
-      setUpdating(0);
+  const saveReport = async () => {
+    if (!selectedPatient || !testName || !summary) {
+      toast.error("Please fill all fields");
       return;
     }
 
+    const payload = {
+      patient_id: selectedPatient.value,
+      test_name: testName,
+      result_summary: summary,
+      report_file: file?.name || (editing ? editing.report_file : null),
+      created_by: "LabTech",
+    };
+
     try {
-      const payload = {
-        patient_id: selectedPatient.value,
-        test_name: testName,
-        result_summary: summary,
-        created_by: "admin",
-        report_file: file.name,
-      };
-
-      const res = await fetch("http://localhost:1333/citius/addReport", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (res.status === 200) {
-        setReports((prev) => [...prev, data.data]);
-
-        toast.success("Lab report added successfully!");
-
-        // Reset form
-        setSelectedPatient(null);
-        setTestName("");
-        setSummary("");
-        setFile(null);
+      let res, data;
+      if (editing) {
+        res = await fetch(
+          `http://localhost:1333/citius/updateReport/${editing.report_id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
+        data = await res.json();
+        if (res.status === 200) {
+          setReports((prev) =>
+            prev.map((r) => (r.report_id === editing.report_id ? data.data : r))
+          );
+          toast.success("Report updated successfully!");
+        } else {
+          toast.error(data.message || "Failed to update report");
+        }
       } else {
-        toast.error(data.message || "Failed to add report");
+        res = await fetch("http://localhost:1333/citius/addReport", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        data = await res.json();
+        if (res.status === 200) {
+          setReports((prev) => [...prev, data.data]);
+          toast.success("Report added successfully!");
+        } else {
+          toast.error(data.message || "Failed to add report");
+        }
       }
-    } catch (error) {
-      console.error("Error adding report:", error);
+
+      setSelectedPatient(null);
+      setTestName("");
+      setSummary("");
+      setFile(null);
+      setEditing(null);
+    } catch (err) {
+      console.error(err);
       toast.error("Internal server error");
-    } finally {
-      setUpdating(0);
     }
   };
 
-  // Trigger addReport when updating === 1
-  useEffect(() => {
-    if (updating === 1) {
-      addReport();
-    }
-  }, [updating]);
+  const handleEdit = (report) => {
+    setSelectedPatient({
+      value: report.patient_id,
+      label: report.patient_name,
+    });
+    setTestName(report.test_name);
+    setSummary(report.result_summary);
+    setFile(null);
+    setEditing(report);
+  };
 
-  // Table columns
+  const handleDelete = async (report) => {
+    if (!window.confirm("Are you sure you want to delete this report?")) return;
+    try {
+      const res = await fetch(
+        `http://localhost:1333/citius/deleteReport/${report.report_id}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (res.status === 200) {
+        setReports((prev) =>
+          prev.filter((r) => r.report_id !== report.report_id)
+        );
+        toast.success("Report deleted successfully!");
+      } else {
+        toast.error(data.message || "Failed to delete report");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Internal server error");
+    }
+  };
+
   const columns = [
-    {
-      name: "Patient",
-      selector: (row) => row.patient_name,
-      sortable: true,
-    },
+    { name: "Patient", selector: (row) => row.patient_name, sortable: true },
     { name: "Test Name", selector: (row) => row.test_name, sortable: true },
     { name: "Summary", selector: (row) => row.result_summary },
     { name: "Report File", selector: (row) => row.report_file },
@@ -127,6 +162,23 @@ const ManageReports = () => {
       name: "Created At",
       selector: (row) =>
         new Date(row.created_at).toLocaleDateString("en-GB") || "",
+    },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div className="d-flex gap-2">
+          <Edit
+            size={20}
+            className="text-warning cursor-pointer"
+            onClick={() => handleEdit(row)}
+          />
+          <Trash2
+            size={20}
+            className="text-danger cursor-pointer"
+            onClick={() => handleDelete(row)}
+          />
+        </div>
+      ),
     },
   ];
 
@@ -139,81 +191,68 @@ const ManageReports = () => {
         <div className="d-flex align-items-center mb-4">
           <FileText size={32} className="text-primary me-3" />
           <div>
-            <h3>Add Report</h3>
+            <h3>{editing ? "Edit Report" : "Add Report"}</h3>
             <p className="text-muted mb-0">
               Manage patient reports ({reports.length} reports)
             </p>
           </div>
         </div>
-        <div className="mb-3">
-          <Row className="gy-3">
-            {/* Patient Select */}
-            <Col md={6}>
-              <InputGroup>
-                <span className="input-group-text">
-                  <User size={18} />
-                </span>
-                <Select
-                  options={patients}
-                  placeholder="Select Patient"
-                  value={selectedPatient}
-                  onChange={(opt) => setSelectedPatient(opt)}
-                  className="flex-grow-1"
-                />
-              </InputGroup>
-            </Col>
 
-            {/* Test Name */}
-            <Col md={6}>
-              <InputGroup>
-                <span className="input-group-text">
-                  <FileText size={18} />
-                </span>
-                <Input
-                  type="text"
-                  placeholder="Enter Test Name"
-                  value={testName}
-                  onChange={(e) => setTestName(e.target.value)}
-                />
-              </InputGroup>
-            </Col>
-
-            {/* Report Summary */}
-            <Col md={6}>
-              <InputGroup>
-                <span className="input-group-text">
-                  <Clipboard size={18} />
-                </span>
-                <Input
-                  type="text"
-                  placeholder="Enter Report Summary"
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                />
-              </InputGroup>
-            </Col>
-
-            {/* File Upload */}
-            <Col md={6}>
-              <InputGroup>
-                <span className="input-group-text">
-                  <Upload size={18} />
-                </span>
-                <Input
-                  type="file"
-                  onChange={(e) => setFile(e.target.files[0])}
-                />
-              </InputGroup>
-            </Col>
-
-            {/* Button */}
-            <Col md={12} className="text-end mt-3">
-              <Button color="primary" onClick={() => setUpdating(1)}>
-                Add Report
-              </Button>
-            </Col>
-          </Row>
-        </div>
+        <Row className="gy-3 mb-3">
+          <Col md={6}>
+            <InputGroup>
+              <span className="input-group-text">
+                <User size={18} />
+              </span>
+              <Select
+                options={patients}
+                placeholder="Select Patient"
+                value={selectedPatient}
+                onChange={(opt) => setSelectedPatient(opt)}
+                className="flex-grow-1"
+              />
+            </InputGroup>
+          </Col>
+          <Col md={6}>
+            <InputGroup>
+              <span className="input-group-text">
+                <FileText size={18} />
+              </span>
+              <Input
+                type="text"
+                placeholder="Enter Test Name"
+                value={testName}
+                onChange={(e) => setTestName(e.target.value)}
+              />
+            </InputGroup>
+          </Col>
+          <Col md={6}>
+            <InputGroup>
+              <span className="input-group-text">
+                <Clipboard size={18} />
+              </span>
+              <Input
+                type="text"
+                placeholder="Enter Report Summary"
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+              />
+            </InputGroup>
+          </Col>
+          <Col md={6}>
+            <InputGroup>
+              <span className="input-group-text">
+                <Upload size={18} />
+              </span>
+              <Input type="file" onChange={(e) => setFile(e.target.files[0])} />
+            </InputGroup>
+          </Col>
+          <Col md={12} className="text-end mt-3">
+            <Button color="primary" onClick={saveReport}>
+              {editing ? "Update Report" : "Add Report"}
+            </Button>
+          </Col>
+        </Row>
 
         <DataTable
           columns={columns}

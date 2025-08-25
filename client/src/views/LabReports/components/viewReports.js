@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Logout from "../../logout";
 import {
   Container,
   Row,
@@ -33,7 +34,17 @@ const ViewReports = () => {
         const role = tokenPayload.role;
         const userId = userInfo.user_id;
 
-        const res = await fetch("http://localhost:1333/citius/getReports");
+        const res = await fetch("http://localhost:1333/citius/getReports", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            role,
+            user_id: userId,
+          }),
+        });
+
         const data = await res.json();
 
         if (res.status === 200) {
@@ -72,31 +83,34 @@ const ViewReports = () => {
   ];
 
   return (
-    <Container className="mt-4">
-      <Row>
-        <Col>
-          <Card>
-            <CardHeader className="d-flex justify-content-between align-items-center">
-              <h5>Lab Reports</h5>
-            </CardHeader>
-            <CardBody>
-              {loading && <Spinner color="primary" />}
-              {error && <Alert color="danger">{error}</Alert>}
-              {!loading && !error && (
-                <DataTable
-                  columns={columns}
-                  data={reports}
-                  pagination
-                  highlightOnHover
-                  striped
-                  responsive
-                />
-              )}
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+    <>
+      <Logout />
+      <Container className="mt-4">
+        <Row>
+          <Col>
+            <Card>
+              <CardHeader className="d-flex justify-content-between align-items-center">
+                <h5>Lab Reports</h5>
+              </CardHeader>
+              <CardBody>
+                {loading && <Spinner color="primary" />}
+                {error && <Alert color="danger">{error}</Alert>}
+                {!loading && !error && (
+                  <DataTable
+                    columns={columns}
+                    data={reports}
+                    pagination
+                    highlightOnHover
+                    striped
+                    responsive
+                  />
+                )}
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 };
 

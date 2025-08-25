@@ -33,9 +33,18 @@ const Dashboard = lazy(() => import("../../views/dashboard/index"));
 const Register = lazy(() =>
   import("../../views/Authentication/components/register")
 );
+const Landing = lazy(() => import("../../views/landingpage"));
 
 // ** Merge Routes
 const Routes = [
+  {
+    path: "/landingPage",
+
+    element: <Landing />,
+    meta: {
+      layout: "vertical",
+    },
+  },
   {
     path: "/login",
 
@@ -73,7 +82,6 @@ const getRouteMeta = (route) => {
   }
 };
 
-// ** Return Filtered Array of Routes & Paths
 const MergeLayoutRoutes = (layout, defaultLayout) => {
   const LayoutRoutes = [];
 
