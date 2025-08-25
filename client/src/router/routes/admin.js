@@ -14,7 +14,9 @@ const Doctor = lazy(() => import("../../views/doctor/index"));
 const MedicineInventory = lazy(() =>
   import("../../views/MedicineInventory/index")
 );
-
+const ViewReports = lazy(() =>
+  import("../../views/LabReports/components/viewReports")
+);
 const Appointment = lazy(() => import("../../views/appointment/index"));
 const Department = lazy(() => import("../../views/Department/index"));
 
@@ -66,6 +68,21 @@ const AdminRoutes = [
   {
     path: "/admin/department",
     element: <Department />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+
+  {
+    path: "/patient/ViewReports",
+    element: <ViewReports />,
+    meta: {
+      layout: "adminLayout",
+    },
+  },
+  {
+    path: "/patient/appointment",
+    element: <Appointment />,
     meta: {
       layout: "adminLayout",
     },

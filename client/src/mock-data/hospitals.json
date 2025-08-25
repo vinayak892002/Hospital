@@ -1,0 +1,14 @@
+[
+	{
+		"hospital_id": "hosp1",
+		"name": "City Hospital"
+	},
+	{
+			"hospital_id": "hosp2",
+			"name": "Metro Care"
+	},
+	{
+			"hospital_id": "hosp3",
+			"name": "Green Valley Medical Center"
+	}
+]

@@ -1,12 +1,14 @@
-// index.js
 import React from "react";
+import { ReportsDashboard } from "./ReportsDashboard";
 import Logout from "../logout";
-const Dashboard = () => {
+
+const index = () => {
   return (
-    <div>
+    <>
       <Logout />
-    </div>
+      <ReportsDashboard />
+    </>
   );
 };
 
-export default Dashboard;
+export default index;

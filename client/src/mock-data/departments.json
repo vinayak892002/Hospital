@@ -1,0 +1,22 @@
+[
+	{
+		"department_id": "dep1",
+		"name": "Cardiology"
+	},
+	{
+		"department_id": "dep2",
+		"name": "Neurology"
+	},
+	{
+		"department_id": "dep3",
+		"name": "Orthopedics"
+	},
+	{
+		"department_id": "dep_lab",
+		"name": "Laboratory"
+	},
+	{
+		"department_id": "dep_pharm",
+		"name": "Pharmacy"
+	}
+]
