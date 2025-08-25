@@ -13,6 +13,7 @@ import {
 } from "reactstrap";
 import { FileText, User, Clipboard, Upload, Edit, Trash2 } from "lucide-react";
 import DataTable from "react-data-table-component";
+import Logout from "../../logout";
 
 const ManageReports = () => {
   const [patients, setPatients] = useState([]);
@@ -183,88 +184,94 @@ const ManageReports = () => {
   ];
 
   return (
-    <Card
-      className="shadow p-4"
-      style={{ backgroundColor: "white", borderRadius: "12px" }}
-    >
-      <CardBody>
-        <div className="d-flex align-items-center mb-4">
-          <FileText size={32} className="text-primary me-3" />
-          <div>
-            <h3>{editing ? "Edit Report" : "Add Report"}</h3>
-            <p className="text-muted mb-0">
-              Manage patient reports ({reports.length} reports)
-            </p>
+    <>
+      <Logout />
+      <Card
+        className="shadow p-4"
+        style={{ backgroundColor: "white", borderRadius: "12px" }}
+      >
+        <CardBody>
+          <div className="d-flex align-items-center mb-4">
+            <FileText size={32} className="text-primary me-3" />
+            <div>
+              <h3>{editing ? "Edit Report" : "Add Report"}</h3>
+              <p className="text-muted mb-0">
+                Manage patient reports ({reports.length} reports)
+              </p>
+            </div>
           </div>
-        </div>
 
-        <Row className="gy-3 mb-3">
-          <Col md={6}>
-            <InputGroup>
-              <span className="input-group-text">
-                <User size={18} />
-              </span>
-              <Select
-                options={patients}
-                placeholder="Select Patient"
-                value={selectedPatient}
-                onChange={(opt) => setSelectedPatient(opt)}
-                className="flex-grow-1"
-              />
-            </InputGroup>
-          </Col>
-          <Col md={6}>
-            <InputGroup>
-              <span className="input-group-text">
-                <FileText size={18} />
-              </span>
-              <Input
-                type="text"
-                placeholder="Enter Test Name"
-                value={testName}
-                onChange={(e) => setTestName(e.target.value)}
-              />
-            </InputGroup>
-          </Col>
-          <Col md={6}>
-            <InputGroup>
-              <span className="input-group-text">
-                <Clipboard size={18} />
-              </span>
-              <Input
-                type="text"
-                placeholder="Enter Report Summary"
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-              />
-            </InputGroup>
-          </Col>
-          <Col md={6}>
-            <InputGroup>
-              <span className="input-group-text">
-                <Upload size={18} />
-              </span>
-              <Input type="file" onChange={(e) => setFile(e.target.files[0])} />
-            </InputGroup>
-          </Col>
-          <Col md={12} className="text-end mt-3">
-            <Button color="primary" onClick={saveReport}>
-              {editing ? "Update Report" : "Add Report"}
-            </Button>
-          </Col>
-        </Row>
+          <Row className="gy-3 mb-3">
+            <Col md={6}>
+              <InputGroup>
+                <span className="input-group-text">
+                  <User size={18} />
+                </span>
+                <Select
+                  options={patients}
+                  placeholder="Select Patient"
+                  value={selectedPatient}
+                  onChange={(opt) => setSelectedPatient(opt)}
+                  className="flex-grow-1"
+                />
+              </InputGroup>
+            </Col>
+            <Col md={6}>
+              <InputGroup>
+                <span className="input-group-text">
+                  <FileText size={18} />
+                </span>
+                <Input
+                  type="text"
+                  placeholder="Enter Test Name"
+                  value={testName}
+                  onChange={(e) => setTestName(e.target.value)}
+                />
+              </InputGroup>
+            </Col>
+            <Col md={6}>
+              <InputGroup>
+                <span className="input-group-text">
+                  <Clipboard size={18} />
+                </span>
+                <Input
+                  type="text"
+                  placeholder="Enter Report Summary"
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                />
+              </InputGroup>
+            </Col>
+            <Col md={6}>
+              <InputGroup>
+                <span className="input-group-text">
+                  <Upload size={18} />
+                </span>
+                <Input
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+              </InputGroup>
+            </Col>
+            <Col md={12} className="text-end mt-3">
+              <Button color="primary" onClick={saveReport}>
+                {editing ? "Update Report" : "Add Report"}
+              </Button>
+            </Col>
+          </Row>
 
-        <DataTable
-          columns={columns}
-          data={reports}
-          noDataComponent="No reports available"
-          pagination
-          highlightOnHover
-          responsive
-          striped
-        />
-      </CardBody>
-    </Card>
+          <DataTable
+            columns={columns}
+            data={reports}
+            noDataComponent="No reports available"
+            pagination
+            highlightOnHover
+            responsive
+            striped
+          />
+        </CardBody>
+      </Card>
+    </>
   );
 };
 

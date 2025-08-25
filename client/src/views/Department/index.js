@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
+import Logout from "../logout";
 
 const Department = () => {
   const [users, setUsers] = useState([]);
@@ -34,13 +35,12 @@ const Department = () => {
       department: bulkDepartment,
     }));
 
-    console.log(JSON.stringify({updates}));
-    
+    console.log(JSON.stringify({ updates }));
 
     fetch("http://localhost:1333/citius/department", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({updates: updates}),
+      body: JSON.stringify({ updates: updates }),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -78,59 +78,63 @@ const Department = () => {
   ];
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h2 style={{ textAlign: "center", color: "#333" }}>
-        Manage Doctor Departments
-      </h2>
+    <>
+      <Logout />
+      <div style={{ padding: "20px", fontFamily: "Arial" }}>
+        <h2 style={{ textAlign: "center", color: "#333" }}>
+          Manage Doctor Departments
+        </h2>
 
-      <DataTable
-        columns={columns}
-        data={users}
-        selectableRows
-        onSelectedRowsChange={({ selectedRows }) => setSelectedRows(selectedRows)}
-        highlightOnHover
-        pagination
-        striped
-      />
+        <DataTable
+          columns={columns}
+          data={users}
+          selectableRows
+          onSelectedRowsChange={({ selectedRows }) =>
+            setSelectedRows(selectedRows)
+          }
+          highlightOnHover
+          pagination
+          striped
+        />
 
-      {selectedRows.length > 0 && (
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
-          <input
-            type="text"
-            value={bulkDepartment}
-            onChange={(e) => setBulkDepartment(e.target.value)}
-            placeholder="Enter new department"
-            style={{
-              padding: "8px",
-              width: "250px",
-              marginRight: "10px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-            }}
-          />
-          <button
-            onClick={updateSelectedDepartments}
-            style={{
-              padding: "10px 20px",
-              background: "green",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            Update Selected
-          </button>
-        </div>
-      )}
-    </div>
+        {selectedRows.length > 0 && (
+          <div style={{ marginTop: "20px", textAlign: "center" }}>
+            <input
+              type="text"
+              value={bulkDepartment}
+              onChange={(e) => setBulkDepartment(e.target.value)}
+              placeholder="Enter new department"
+              style={{
+                padding: "8px",
+                width: "250px",
+                marginRight: "10px",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <button
+              onClick={updateSelectedDepartments}
+              style={{
+                padding: "10px 20px",
+                background: "green",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+              }}
+            >
+              Update Selected
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
 export default Department;
 
 // import React, { useEffect, useState } from "react";
-
 
 // const Department = () => {
 //   const [users, setUsers] = useState([]);
@@ -166,7 +170,7 @@ export default Department;
 //     body: JSON.stringify({
 //       id: selectedUser.id,
 //       department: newDepartment,
-//       role: selectedUser.role  //'Admin'  
+//       role: selectedUser.role  //'Admin'
 //     }),
 //   })
 //     .then((res) => res.json())

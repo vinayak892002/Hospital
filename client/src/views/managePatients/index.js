@@ -40,6 +40,7 @@ import {
   AlertTriangle,
   Plus,
 } from "lucide-react";
+import Logout from "../logout";
 
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
@@ -347,372 +348,375 @@ const PatientManagement = () => {
   }
 
   return (
-    <Container fluid className="py-4">
-      <Row className="mb-3">
-        <Col>
-          <Button color="success" onClick={handleAdd}>
-            <Plus size={16} className="me-2" />
-            Add Patient
-          </Button>
-        </Col>
-      </Row>
+    <>
+      <Logout />
+      <Container fluid className="py-4">
+        <Row className="mb-3">
+          <Col>
+            <Button color="success" onClick={handleAdd}>
+              <Plus size={16} className="me-2" />
+              Add Patient
+            </Button>
+          </Col>
+        </Row>
 
-      <Row>
-        <Col>
-          <Card>
-            <CardHeader className="d-flex justify-content-between">
-              <h4 className="mb-0">
-                <Users className="me-2" /> Patient Management
-              </h4>
-              <Badge color="info" pill>
-                {filteredPatients.length} Patients
-              </Badge>
-            </CardHeader>
-            <CardBody>
-              <Row className="mb-3">
-                <Col md={6}>
+        <Row>
+          <Col>
+            <Card>
+              <CardHeader className="d-flex justify-content-between">
+                <h4 className="mb-0">
+                  <Users className="me-2" /> Patient Management
+                </h4>
+                <Badge color="info" pill>
+                  {filteredPatients.length} Patients
+                </Badge>
+              </CardHeader>
+              <CardBody>
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <InputGroup>
+                      <InputGroupText>
+                        <Search size={16} />
+                      </InputGroupText>
+                      <Input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </InputGroup>
+                  </Col>
+                  <Col md={3}>
+                    <InputGroup>
+                      <InputGroupText>
+                        <Filter size={16} />
+                      </InputGroupText>
+                      <Input
+                        type="select"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </Input>
+                    </InputGroup>
+                  </Col>
+                </Row>
+
+                <DataTable
+                  columns={columns}
+                  data={filteredPatients}
+                  pagination
+                  highlightOnHover
+                  responsive
+                  striped
+                  noDataComponent="No patients found"
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* ================= ADD / EDIT MODAL ================= */}
+        <Modal isOpen={editModal} toggle={() => setEditModal(false)} size="lg">
+          <ModalHeader toggle={() => setEditModal(false)}>
+            {isEdit ? (
+              <>
+                <Edit3 size={20} className="me-2" /> Edit Patient:{" "}
+                {selectedPatient?.name}
+              </>
+            ) : (
+              <>
+                <Plus size={20} className="me-2" /> Add New Patient
+              </>
+            )}
+          </ModalHeader>
+
+          <ModalBody>
+            <Row>
+              {/* Full Name */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="name">Full Name</Label>
                   <InputGroup>
                     <InputGroupText>
-                      <Search size={16} />
+                      <User size={16} />
                     </InputGroupText>
                     <Input
                       type="text"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                     />
                   </InputGroup>
-                </Col>
-                <Col md={3}>
+                </FormGroup>
+              </Col>
+
+              {/* Email */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="email">Email</Label>
                   <InputGroup>
                     <InputGroupText>
-                      <Filter size={16} />
+                      <Mail size={16} />
+                    </InputGroupText>
+                    <Input
+                      type="email"
+                      id="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                    />
+                  </InputGroup>
+                </FormGroup>
+              </Col>
+            </Row>
+
+            <Row>
+              {/* Contact Number */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="contact_number">Contact Number</Label>
+                  <InputGroup>
+                    <InputGroupText>
+                      <Phone size={16} />
+                    </InputGroupText>
+                    <Input
+                      type="text"
+                      id="contact_number"
+                      value={formData.contact_number}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contact_number: e.target.value,
+                        })
+                      }
+                    />
+                  </InputGroup>
+                </FormGroup>
+              </Col>
+
+              {/* Status */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="status">Status</Label>
+                  <InputGroup>
+                    <InputGroupText>
+                      <UserCheck size={16} />
                     </InputGroupText>
                     <Input
                       type="select"
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
+                      id="status"
+                      value={formData.status}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: e.target.value === "true",
+                        })
+                      }
                     >
-                      <option value="all">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
+                      <option value="true">Active</option>
+                      <option value="false">Inactive</option>
                     </Input>
                   </InputGroup>
-                </Col>
-              </Row>
+                </FormGroup>
+              </Col>
+            </Row>
 
-              <DataTable
-                columns={columns}
-                data={filteredPatients}
-                pagination
-                highlightOnHover
-                responsive
-                striped
-                noDataComponent="No patients found"
-              />
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
+            <Row>
+              {/* Gender */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="gender">Gender</Label>
+                  <InputGroup>
+                    <InputGroupText>⚧</InputGroupText>
+                    <Input
+                      type="select"
+                      id="gender"
+                      value={formData.gender}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          gender: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </Input>
+                  </InputGroup>
+                </FormGroup>
+              </Col>
 
-      {/* ================= ADD / EDIT MODAL ================= */}
-      <Modal isOpen={editModal} toggle={() => setEditModal(false)} size="lg">
-        <ModalHeader toggle={() => setEditModal(false)}>
-          {isEdit ? (
-            <>
-              <Edit3 size={20} className="me-2" /> Edit Patient:{" "}
-              {selectedPatient?.name}
-            </>
-          ) : (
-            <>
-              <Plus size={20} className="me-2" /> Add New Patient
-            </>
-          )}
-        </ModalHeader>
+              {/* DOB with Flatpickr */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="dob">Date of Birth</Label>
+                  <InputGroup>
+                    <InputGroupText>
+                      <Calendar size={16} />
+                    </InputGroupText>
+                    <Flatpickr
+                      className="form-control"
+                      id="dob"
+                      placeholder="Select DOB"
+                      value={formData.dob}
+                      options={{
+                        dateFormat: "Y-m-d",
+                        maxDate: "today",
+                      }}
+                      onChange={(date) =>
+                        setFormData({
+                          ...formData,
+                          dob: date[0],
+                        })
+                      }
+                    />
+                  </InputGroup>
+                </FormGroup>
+              </Col>
+            </Row>
 
-        <ModalBody>
-          <Row>
-            {/* Full Name */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="name">Full Name</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <User size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="text"
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
+            <Row>
+              {/* Address */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="address">Address</Label>
+                  <InputGroup>
+                    <InputGroupText>
+                      <MapPin size={16} />
+                    </InputGroupText>
+                    <Input
+                      type="text"
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          address: e.target.value,
+                        })
+                      }
+                    />
+                  </InputGroup>
+                </FormGroup>
+              </Col>
 
-            {/* Email */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="email">Email</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <Mail size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
-          </Row>
+              {/* Blood Group */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="blood_group">Blood Group</Label>
+                  <InputGroup>
+                    <InputGroupText>
+                      <Heart size={16} />
+                    </InputGroupText>
+                    <Input
+                      type="text"
+                      id="blood_group"
+                      value={formData.blood_group}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          blood_group: e.target.value,
+                        })
+                      }
+                    />
+                  </InputGroup>
+                </FormGroup>
+              </Col>
+            </Row>
 
-          <Row>
-            {/* Contact Number */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="contact_number">Contact Number</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <Phone size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="text"
-                    id="contact_number"
-                    value={formData.contact_number}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contact_number: e.target.value,
-                      })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
+            <Row>
+              {/* Emergency Contact */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="emergency_contact">Emergency Contact</Label>
+                  <InputGroup>
+                    <InputGroupText>
+                      <AlertTriangle size={16} />
+                    </InputGroupText>
+                    <Input
+                      type="text"
+                      id="emergency_contact"
+                      value={formData.emergency_contact}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          emergency_contact: e.target.value,
+                        })
+                      }
+                    />
+                  </InputGroup>
+                </FormGroup>
+              </Col>
 
-            {/* Status */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="status">Status</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <UserCheck size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="select"
-                    id="status"
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        status: e.target.value === "true",
-                      })
-                    }
-                  >
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                  </Input>
-                </InputGroup>
-              </FormGroup>
-            </Col>
-          </Row>
+              {/* Allergies */}
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="allergies">Allergies (comma-separated)</Label>
+                  <InputGroup>
+                    <InputGroupText>
+                      <AlertTriangle size={16} />
+                    </InputGroupText>
+                    <Input
+                      type="text"
+                      id="allergies"
+                      value={formData.allergies}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          allergies: e.target.value,
+                        })
+                      }
+                    />
+                  </InputGroup>
+                </FormGroup>
+              </Col>
+            </Row>
+          </ModalBody>
 
-          <Row>
-            {/* Gender */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="gender">Gender</Label>
-                <InputGroup>
-                  <InputGroupText>⚧</InputGroupText>
-                  <Input
-                    type="select"
-                    id="gender"
-                    value={formData.gender}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        gender: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Select</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </Input>
-                </InputGroup>
-              </FormGroup>
-            </Col>
+          <ModalFooter>
+            <Button color="secondary" onClick={() => setEditModal(false)}>
+              Cancel
+            </Button>
+            <Button color="success" onClick={handleSave}>
+              {isEdit ? "Save Changes" : "Register Patient"}
+            </Button>
+          </ModalFooter>
+        </Modal>
 
-            {/* DOB with Flatpickr */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="dob">Date of Birth</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <Calendar size={16} />
-                  </InputGroupText>
-                  <Flatpickr
-                    className="form-control"
-                    id="dob"
-                    placeholder="Select DOB"
-                    value={formData.dob}
-                    options={{
-                      dateFormat: "Y-m-d",
-                      maxDate: "today",
-                    }}
-                    onChange={(date) =>
-                      setFormData({
-                        ...formData,
-                        dob: date[0],
-                      })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
-          </Row>
-
-          <Row>
-            {/* Address */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="address">Address</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <MapPin size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="text"
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        address: e.target.value,
-                      })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
-
-            {/* Blood Group */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="blood_group">Blood Group</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <Heart size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="text"
-                    id="blood_group"
-                    value={formData.blood_group}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        blood_group: e.target.value,
-                      })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
-          </Row>
-
-          <Row>
-            {/* Emergency Contact */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="emergency_contact">Emergency Contact</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <AlertTriangle size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="text"
-                    id="emergency_contact"
-                    value={formData.emergency_contact}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        emergency_contact: e.target.value,
-                      })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
-
-            {/* Allergies */}
-            <Col md={6}>
-              <FormGroup>
-                <Label for="allergies">Allergies (comma-separated)</Label>
-                <InputGroup>
-                  <InputGroupText>
-                    <AlertTriangle size={16} />
-                  </InputGroupText>
-                  <Input
-                    type="text"
-                    id="allergies"
-                    value={formData.allergies}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        allergies: e.target.value,
-                      })
-                    }
-                  />
-                </InputGroup>
-              </FormGroup>
-            </Col>
-          </Row>
-        </ModalBody>
-
-        <ModalFooter>
-          <Button color="secondary" onClick={() => setEditModal(false)}>
-            Cancel
-          </Button>
-          <Button color="success" onClick={handleSave}>
-            {isEdit ? "Save Changes" : "Register Patient"}
-          </Button>
-        </ModalFooter>
-      </Modal>
-
-      {/* Delete Modal */}
-      <Modal isOpen={deleteModal} toggle={() => setDeleteModal(false)}>
-        <ModalHeader
-          toggle={() => setDeleteModal(false)}
-          className="text-danger"
-        >
-          <Trash2 /> Confirm Delete
-        </ModalHeader>
-        <ModalBody>
-          <h5>Are you sure you want to delete this patient?</h5>
-          <p>
-            <strong>{selectedPatient?.name}</strong> (ID:{" "}
-            {selectedPatient?.user_id})
-          </p>
-          <Alert color="warning">This action cannot be undone.</Alert>
-        </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={() => setDeleteModal(false)}>
-            Cancel
-          </Button>
-          <Button color="danger" onClick={handleDeleteConfirm}>
-            Delete Patient
-          </Button>
-        </ModalFooter>
-      </Modal>
-    </Container>
+        {/* Delete Modal */}
+        <Modal isOpen={deleteModal} toggle={() => setDeleteModal(false)}>
+          <ModalHeader
+            toggle={() => setDeleteModal(false)}
+            className="text-danger"
+          >
+            <Trash2 /> Confirm Delete
+          </ModalHeader>
+          <ModalBody>
+            <h5>Are you sure you want to delete this patient?</h5>
+            <p>
+              <strong>{selectedPatient?.name}</strong> (ID:{" "}
+              {selectedPatient?.user_id})
+            </p>
+            <Alert color="warning">This action cannot be undone.</Alert>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={() => setDeleteModal(false)}>
+              Cancel
+            </Button>
+            <Button color="danger" onClick={handleDeleteConfirm}>
+              Delete Patient
+            </Button>
+          </ModalFooter>
+        </Modal>
+      </Container>
+    </>
   );
 };
 

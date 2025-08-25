@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import {
-  Edit2,
-  Save,
-  X,
-  Trash2,
-  RefreshCw,
-  Users,
-} from "lucide-react";
+import { Edit2, Save, X, Trash2, RefreshCw, Users } from "lucide-react";
 import {
   Form,
   InputGroup,
@@ -19,6 +12,7 @@ import {
   OverlayTrigger,
   Tooltip,
 } from "react-bootstrap";
+import Logout from "../logout";
 
 const DoctorManagement = () => {
   const [doctors, setDoctors] = useState([]);
@@ -61,25 +55,27 @@ const DoctorManagement = () => {
   // Fixed filtering to handle nested profile structure
   useEffect(() => {
     let filtered = doctors;
-    
+
     if (searchFilter.trim()) {
       filtered = filtered.filter((d) =>
         d.name?.toLowerCase().includes(searchFilter.toLowerCase())
       );
     }
-    
+
     if (departmentFilter.trim()) {
       filtered = filtered.filter((d) =>
-        d.profile?.department?.toLowerCase().includes(departmentFilter.toLowerCase())
+        d.profile?.department
+          ?.toLowerCase()
+          .includes(departmentFilter.toLowerCase())
       );
     }
-    
+
     if (statusFilter !== "all") {
       filtered = filtered.filter((d) =>
         statusFilter === "active" ? d.status : !d.status
       );
     }
-    
+
     setFilteredDoctors(filtered);
   }, [searchFilter, departmentFilter, statusFilter, doctors]);
 
@@ -109,15 +105,18 @@ const DoctorManagement = () => {
 
       console.log("Sending update payload:", updatePayload); // Debug log
 
-      const response = await fetch(`http://localhost:1333/citius/update-doctor/${doctorId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatePayload),
-      });
-      
+      const response = await fetch(
+        `http://localhost:1333/citius/update-doctor/${doctorId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatePayload),
+        }
+      );
+
       const data = await response.json();
       console.log("Update response:", data); // Debug log
-      
+
       if (data.success) {
         setSuccess("Doctor updated successfully");
         await fetchDoctors();
@@ -136,9 +135,12 @@ const DoctorManagement = () => {
   const handleDelete = async (doctorId) => {
     if (window.confirm("Are you sure you want to delete this doctor?")) {
       try {
-        const response = await fetch(`http://localhost:1333/citius/delete-doctor/${doctorId}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `http://localhost:1333/citius/delete-doctor/${doctorId}`,
+          {
+            method: "DELETE",
+          }
+        );
         const data = await response.json();
         if (data.success) {
           setSuccess("Doctor deleted successfully");
@@ -173,14 +175,14 @@ const DoctorManagement = () => {
   // Format availability for display
   const formatAvailability = (availability) => {
     if (!availability) return "N/A";
-    
-    if (typeof availability === 'object') {
+
+    if (typeof availability === "object") {
       const days = Object.entries(availability)
         .map(([day, time]) => `${day}: ${time}`)
-        .join(', ');
-      return days.length > 50 ? days.substring(0, 50) + '...' : days;
+        .join(", ");
+      return days.length > 50 ? days.substring(0, 50) + "..." : days;
     }
-    
+
     return availability.toString();
   };
 
@@ -226,9 +228,7 @@ const DoctorManagement = () => {
         editingId === row._id ? (
           <Form.Control
             value={editData.department}
-            onChange={(e) =>
-              handleInputChange("department", e.target.value)
-            }
+            onChange={(e) => handleInputChange("department", e.target.value)}
             placeholder="Department"
           />
         ) : (
@@ -244,9 +244,7 @@ const DoctorManagement = () => {
         editingId === row._id ? (
           <Form.Control
             value={editData.qualification}
-            onChange={(e) =>
-              handleInputChange("qualification", e.target.value)
-            }
+            onChange={(e) => handleInputChange("qualification", e.target.value)}
             placeholder="Qualification"
           />
         ) : (
@@ -262,11 +260,11 @@ const DoctorManagement = () => {
           placement="top"
           overlay={
             <Tooltip>
-              {row.profile?.availability ? 
-                (typeof row.profile.availability === 'object' ? 
-                  JSON.stringify(row.profile.availability, null, 2) : 
-                  row.profile.availability) : 
-                "No availability info"}
+              {row.profile?.availability
+                ? typeof row.profile.availability === "object"
+                  ? JSON.stringify(row.profile.availability, null, 2)
+                  : row.profile.availability
+                : "No availability info"}
             </Tooltip>
           }
         >
@@ -350,103 +348,110 @@ const DoctorManagement = () => {
   }
 
   return (
-    <div className="p-4">
-      <div className="d-flex align-items-center mb-3">
-        <Users size={32} className="text-primary me-3" />
-        <div>
-          <h3>Doctor Management</h3>
-          <p className="text-muted mb-0">
-            Manage healthcare professionals ({filteredDoctors.length} doctors)
-          </p>
-        </div>
-        <Button
-          variant="outline-primary"
-          className="ms-auto"
-          onClick={fetchDoctors}
-        >
-          <RefreshCw size={16} /> Refresh
-        </Button>
-      </div>
-
-      {error && (
-        <Alert variant="danger" dismissible onClose={() => setError("")}>
-          {error}
-        </Alert>
-      )}
-      {success && (
-        <Alert variant="success" dismissible onClose={() => setSuccess("")}>
-          {success}
-        </Alert>
-      )}
-
-      <Row className="mb-3">
-        <Col md={3}>
-          <InputGroup>
-            <Form.Control
-              placeholder="Search by name..."
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-            />
-          </InputGroup>
-        </Col>
-        <Col md={3}>
-          <InputGroup>
-            <Form.Control
-              placeholder="Filter by department..."
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-            />
-          </InputGroup>
-        </Col>
-        <Col md={3}>
-          <Form.Select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+    <>
+      <Logout />
+      <div className="p-4">
+        <div className="d-flex align-items-center mb-3">
+          <Users size={32} className="text-primary me-3" />
+          <div>
+            <h3>Doctor Management</h3>
+            <p className="text-muted mb-0">
+              Manage healthcare professionals ({filteredDoctors.length} doctors)
+            </p>
+          </div>
+          <Button
+            variant="outline-primary"
+            className="ms-auto"
+            onClick={fetchDoctors}
           >
-            <option value="all">All Status</option>
-            <option value="active">Active Only</option>
-            <option value="inactive">Inactive Only</option>
-          </Form.Select>
-        </Col>
-        <Col md={3}>
-          <Button variant="secondary" className="w-100" onClick={clearFilters}>
-            Clear Filters
+            <RefreshCw size={16} /> Refresh
           </Button>
-        </Col>
-      </Row>
-
-      <div className="mb-3">
-        <small className="text-muted">
-          Showing {filteredDoctors.length} of {doctors.length} doctors
-        </small>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredDoctors}
-        pagination
-        paginationPerPage={10}
-        paginationRowsPerPageOptions={[5, 10, 15, 20]}
-        highlightOnHover
-        striped
-        responsive
-        persistTableHead
-        noHeader
-        defaultSortFieldId="name"
-      />
-
-      {filteredDoctors.length === 0 && !loading && (
-        <div className="text-center mt-5">
-          <Users size={48} className="text-muted mb-2" />
-          <h5>No doctors found</h5>
-          <p className="text-muted">
-            {doctors.length === 0 
-              ? "No doctors available in the system."
-              : "Try adjusting your search filters."}
-          </p>
         </div>
-      )}
-    </div>
+
+        {error && (
+          <Alert variant="danger" dismissible onClose={() => setError("")}>
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert variant="success" dismissible onClose={() => setSuccess("")}>
+            {success}
+          </Alert>
+        )}
+
+        <Row className="mb-3">
+          <Col md={3}>
+            <InputGroup>
+              <Form.Control
+                placeholder="Search by name..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+              />
+            </InputGroup>
+          </Col>
+          <Col md={3}>
+            <InputGroup>
+              <Form.Control
+                placeholder="Filter by department..."
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+              />
+            </InputGroup>
+          </Col>
+          <Col md={3}>
+            <Form.Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
+            </Form.Select>
+          </Col>
+          <Col md={3}>
+            <Button
+              variant="secondary"
+              className="w-100"
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </Button>
+          </Col>
+        </Row>
+
+        <div className="mb-3">
+          <small className="text-muted">
+            Showing {filteredDoctors.length} of {doctors.length} doctors
+          </small>
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={filteredDoctors}
+          pagination
+          paginationPerPage={10}
+          paginationRowsPerPageOptions={[5, 10, 15, 20]}
+          highlightOnHover
+          striped
+          responsive
+          persistTableHead
+          noHeader
+          defaultSortFieldId="name"
+        />
+
+        {filteredDoctors.length === 0 && !loading && (
+          <div className="text-center mt-5">
+            <Users size={48} className="text-muted mb-2" />
+            <h5>No doctors found</h5>
+            <p className="text-muted">
+              {doctors.length === 0
+                ? "No doctors available in the system."
+                : "Try adjusting your search filters."}
+            </p>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
